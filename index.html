@@ -2,15 +2,23 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Portal Smart TV</title>
+
+<!-- ===== PWA (arquivos reais — necessários para instalação funcionar) ===== -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#07080a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Portal TV">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
-<!-- Configurações PWA (Manifest Inline via Blob ou links de app) -->
-<meta name="theme-color" content="#07080a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <style>
     :root {
         --bg: #07080a;
@@ -29,13 +37,17 @@
         --rail-w: 5.5rem;
         --safe-x: clamp(20px, 3.5vw, 50px);
         --safe-y: clamp(16px, 3vh, 40px);
+        --radius: 16px;
+        --ring: 0 0 0 4px var(--accent-soft);
     }
 
     * { box-sizing: border-box; }
-    html { font-size: 20px; } 
+    html { font-size: 20px; }
 
     body {
-        background: var(--bg);
+        background:
+            radial-gradient(1200px 500px at 80% -10%, rgba(255, 209, 102, 0.05), transparent 60%),
+            var(--bg);
         color: var(--text);
         font-family: 'Inter', sans-serif;
         margin: 0;
@@ -47,6 +59,13 @@
     }
 
     button { font-family: inherit; }
+
+    :focus { outline: none; }
+    :focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: 8px;
+    }
 
     /* ---------- Barra Lateral (Rail) / Rodapé no Mobile ---------- */
     .rail {
@@ -63,15 +82,16 @@
         z-index: 60;
     }
     .rail-mark {
-        width: 2.8rem; height: 2.8rem; border-radius: 10px; background: var(--accent);
+        width: 2.8rem; height: 2.8rem; border-radius: 12px; background: var(--accent);
         display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; flex: none;
+        box-shadow: 0 4px 18px rgba(255, 209, 102, 0.25);
     }
     .rail-mark svg { width: 1.5rem; height: 1.5rem; }
 
     .rail-btn {
         width: 3.6rem; height: 3.6rem;
         background: transparent; color: var(--text-dim);
-        border: 3px solid transparent; border-radius: 12px;
+        border: 3px solid transparent; border-radius: 14px;
         display: flex; align-items: center; justify-content: center;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -79,53 +99,90 @@
     .rail-btn svg { width: 1.7rem; height: 1.7rem; }
     .rail-btn:hover, .rail-btn:focus-visible {
         color: var(--bg); border-color: var(--accent); background: var(--accent);
-        box-shadow: 0 0 0 5px var(--accent-soft); outline: none; transform: scale(1.05);
+        box-shadow: var(--ring); transform: scale(1.05);
     }
     .rail-btn[aria-pressed="true"] { color: var(--bg); background: var(--accent); border-color: var(--accent); }
     .rail-spacer { flex: 1; }
 
     /* ---------- Barra de Busca ---------- */
     .search-bar {
-        display: none;
+        display: flex;
         align-items: center;
         gap: 1rem;
-        margin: var(--safe-y) var(--safe-x) 0;
+        margin: 0 var(--safe-x);
+        max-height: 0; opacity: 0; overflow: hidden;
         background: var(--surface);
-        border: 3px solid var(--border);
+        border: 3px solid transparent;
         border-radius: 14px;
-        padding: 0.4rem 1.2rem;
+        padding: 0 1.2rem;
         flex-shrink: 0;
+        transition: max-height 0.25s ease, opacity 0.25s ease, padding 0.25s ease, margin 0.25s ease, border-color 0.2s ease;
     }
-    .search-bar.open { display: flex; }
+    .search-bar.open {
+        max-height: 6rem; opacity: 1;
+        margin: var(--safe-y) var(--safe-x) 0;
+        border-color: var(--border);
+        padding: 0.4rem 1.2rem;
+    }
     .search-bar svg { width: 1.4rem; height: 1.4rem; color: var(--text-faint); flex: none; }
     .search-bar input {
         flex: 1; background: transparent; border: none; color: var(--text);
         font-size: 1.15rem; padding: 0.8rem 0; font-family: inherit; font-weight: 600;
     }
     .search-bar input:focus { outline: none; }
-    .search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
+    .search-bar:focus-within { border-color: var(--accent); box-shadow: var(--ring); }
 
     /* ---------- Cabeçalho da Tela ---------- */
     .view-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: var(--safe-y) var(--safe-x) 0.8rem;
+        gap: 1rem;
+        padding: var(--safe-y) var(--safe-x) 1rem;
         flex-shrink: 0;
     }
     .view-title-wrap {
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+        gap: 1.2rem;
+        min-width: 0;
     }
-    h1 { 
-        font-family: 'Outfit', sans-serif; 
-        font-weight: 800; 
-        font-size: 1.8rem; 
-        margin: 0; 
+    .brand {
+        display: flex; align-items: center; gap: 0.9rem; min-width: 0;
+    }
+    .brand-mark {
+        width: 2.6rem; height: 2.6rem; border-radius: 12px; background: var(--accent);
+        display: flex; align-items: center; justify-content: center; flex: none;
+        box-shadow: 0 4px 18px rgba(255, 209, 102, 0.25);
+    }
+    .brand-mark svg { width: 1.4rem; height: 1.4rem; }
+    h1 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: clamp(1.3rem, 2.2vw, 1.8rem);
+        margin: 0;
         color: #fff;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    
+    .header-right { display: flex; align-items: center; gap: 1rem; flex: none; }
+    .clock {
+        font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem;
+        color: var(--text-dim); background: var(--bg-elevated);
+        border: 2px solid var(--border); border-radius: 12px; padding: 0.45rem 0.9rem;
+        font-variant-numeric: tabular-nums;
+    }
+    .install-btn {
+        display: none;
+        align-items: center; gap: 0.5rem;
+        background: var(--accent); color: var(--bg);
+        border: none; border-radius: 12px;
+        padding: 0.55rem 1.1rem;
+        font-size: 0.95rem; font-weight: 800; cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .install-btn svg { width: 1.1rem; height: 1.1rem; }
+    .install-btn:hover, .install-btn:focus-visible { transform: scale(1.04); box-shadow: var(--ring); }
+
     .back-btn {
         display: none;
         background: var(--surface);
@@ -137,17 +194,19 @@
         font-weight: 700;
         cursor: pointer;
         transition: all 0.2s ease;
+        flex: none;
     }
     .back-btn:hover, .back-btn:focus-visible {
-        border-color: var(--accent); background: var(--accent); color: var(--bg); outline: none;
+        border-color: var(--accent); background: var(--accent); color: var(--bg);
     }
 
-    /* ---------- Layout Principal Responsivo (Duas Colunas em TV/Tablets, Coluna Única em Celulares) ---------- */
+    /* ---------- Layout Principal ---------- */
     .main-layout {
         display: grid;
-        grid-template-columns: 440px 1fr;
+        grid-template-columns: minmax(340px, 440px) 1fr;
         gap: 24px;
         flex-grow: 1;
+        min-height: 0;
         padding: 0 var(--safe-x) var(--safe-y);
         overflow: hidden;
     }
@@ -159,6 +218,7 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        min-height: 0;
     }
 
     .scroll-btn-top, .scroll-btn-bottom {
@@ -187,20 +247,78 @@
         flex-direction: column;
         gap: 12px;
         scroll-behavior: smooth;
+        min-height: 0;
     }
     .panel-scroll::-webkit-scrollbar { width: 8px; }
     .panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
+    /* Grade de categorias */
+    .grid-categories {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    .cat-card {
+        appearance: none;
+        background: var(--surface);
+        border: 3px solid var(--border);
+        padding: 1.1rem 1rem;
+        border-radius: var(--radius);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.6rem;
+        text-align: left;
+        width: 100%;
+        color: var(--text);
+        transition: all 0.2s ease;
+        min-height: 6.2rem;
+        justify-content: space-between;
+    }
+    .cat-card .cat-icon {
+        width: 1.5rem; height: 1.5rem; color: var(--accent);
+    }
+    .cat-card .label {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .cat-card .badge {
+        font-size: 0.75rem;
+        background: var(--bg);
+        padding: 0.15rem 0.6rem;
+        border-radius: 999px;
+        color: var(--text-dim);
+        font-weight: 700;
+        border: 2px solid var(--border);
+        align-self: flex-end;
+    }
+    .cat-card:hover, .cat-card:focus-visible {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: var(--bg);
+        box-shadow: var(--ring);
+        transform: translateY(-2px);
+    }
+    .cat-card:hover .cat-icon, .cat-card:focus-visible .cat-icon { color: var(--bg); }
+    .cat-card:hover .badge, .cat-card:focus-visible .badge {
+        background: var(--bg); color: var(--text); border-color: var(--bg);
+    }
+
+    /* Cartões de canal (lista) */
     .nav-card {
         appearance: none;
         background: var(--surface);
         border: 3px solid var(--border);
-        padding: 16px 20px;
-        border-radius: 14px;
+        padding: 15px 18px;
+        border-radius: var(--radius);
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 12px;
         text-align: left;
         width: 100%;
         color: var(--text);
@@ -208,49 +326,42 @@
     }
     .nav-card .label {
         font-family: 'Outfit', sans-serif;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         font-weight: 700;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         flex-grow: 1;
-        padding-right: 10px;
+        min-width: 0;
     }
-    
-    .nav-card .badge {
+    .nav-card .label small {
+        color: var(--text-faint);
+        display: block;
+        font-family: 'Inter', sans-serif;
         font-size: 0.8rem;
-        background: var(--bg);
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-dim);
-        font-weight: 700;
-        border: 2px solid var(--border);
-        flex-shrink: 0;
+        font-weight: 600;
+        margin-top: 3px;
     }
-
+    .nav-card .play-hint {
+        display: flex; align-items: center; gap: 0.4rem; flex: none;
+        font-size: 0.78rem; font-weight: 700;
+        color: var(--text-faint);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .nav-card .play-hint svg { width: 1rem; height: 1rem; fill: currentColor; }
     .nav-card:hover, .nav-card:focus-visible {
         border-color: var(--accent);
-        background: var(--accent);
-        color: var(--bg);
-        outline: none;
-        box-shadow: 0 0 0 5px var(--accent-soft);
-        transform: scale(1.01);
+        background: var(--surface-hover);
+        box-shadow: var(--ring);
+        transform: translateX(4px);
     }
-    .nav-card:hover .badge, .nav-card:focus-visible .badge {
-        background: var(--bg); color: var(--text); border-color: var(--bg);
+    .nav-card:hover .play-hint, .nav-card:focus-visible .play-hint { color: var(--accent); }
+    .nav-card.active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
     }
-
-    .category-section-title {
-        font-size: 1rem;
-        font-weight: 800;
-        color: var(--accent);
-        margin: 12px 0 4px 4px;
-        text-transform: uppercase;
-    }
+    .nav-card.active .play-hint { color: var(--accent); }
 
     .hidden { display: none !important; }
 
@@ -263,22 +374,50 @@
         flex-direction: column;
         overflow: hidden;
         box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        min-height: 0;
     }
 
     .player-topbar {
         background: var(--bg-elevated);
-        padding: 16px 20px;
+        padding: 14px 20px;
         border-bottom: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+    .player-topbar .now {
+        display: flex; align-items: center; gap: 0.6rem;
         font-family: 'Outfit', sans-serif;
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         color: var(--accent);
+        min-width: 0;
     }
+    .player-topbar .now .dot {
+        width: 0.55rem; height: 0.55rem; border-radius: 50%;
+        background: var(--danger); flex: none;
+        animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+    .player-topbar #player-title {
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .fs-btn {
+        background: var(--surface); color: var(--text-dim);
+        border: 2px solid var(--border); border-radius: 10px;
+        width: 2.2rem; height: 2.2rem;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; flex: none;
+        transition: all 0.2s ease;
+    }
+    .fs-btn svg { width: 1.1rem; height: 1.1rem; }
+    .fs-btn:hover, .fs-btn:focus-visible { color: var(--bg); background: var(--accent); border-color: var(--accent); }
 
     .player-stage {
         flex-grow: 1;
         width: 100%;
-        height: 100%;
+        min-height: 0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -302,6 +441,13 @@
         color: var(--text-dim);
         gap: 0.8rem;
     }
+    .player-placeholder .big-icon {
+        width: 4rem; height: 4rem; border-radius: 20px;
+        background: var(--surface); border: 2px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--accent); margin-bottom: 0.4rem;
+    }
+    .player-placeholder .big-icon svg { width: 2rem; height: 2rem; }
     .player-placeholder h3 { color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; font-size: 1.3rem; }
     .player-placeholder p { margin: 0; font-size: 1rem; max-width: 22rem; }
 
@@ -311,7 +457,7 @@
         gap: 1rem; padding: 3rem 1rem; color: var(--text-dim); margin: auto;
     }
     .empty-state h3 { font-family: 'Outfit', sans-serif; color: var(--text); margin: 0; font-size: 1.2rem; }
-    .empty-state p { margin: 0; font-size: 0.9rem; }
+    .empty-state p { margin: 0; font-size: 0.9rem; max-width: 20rem; }
 
     /* ---------- Botões Gerais ---------- */
     .btn {
@@ -320,28 +466,31 @@
         transition: all 0.2s ease;
     }
     .btn:hover, .btn:focus-visible {
-        border-color: var(--accent); background: var(--accent); color: var(--bg); outline: none;
+        border-color: var(--accent); background: var(--accent); color: var(--bg);
     }
     .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 800; }
+    .btn.primary:hover, .btn.primary:focus-visible { filter: brightness(1.1); }
 
     /* ---------- Modal de Configurações ---------- */
     #settings-modal {
         display: none; position: fixed; inset: 0; background: rgba(7, 8, 10, 0.92);
         backdrop-filter: blur(6px); z-index: 100; padding: var(--safe-y) var(--safe-x); overflow-y: auto;
     }
+    #settings-modal.open { display: block; }
     .settings-content {
         max-width: 46rem; margin: 3vh auto; background: var(--bg-elevated); border: 2px solid var(--border);
         padding: 2.4rem; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.7);
     }
     .settings-header { margin-bottom: 1.5rem; }
-    .settings-header h2 { padding: 0; margin-bottom: 0.4rem; font-size: 1.6rem; }
+    .settings-header h2 { padding: 0; margin: 0 0 0.4rem; font-size: 1.6rem; font-family: 'Outfit', sans-serif; }
     .settings-header p { margin: 0; color: var(--text-dim); font-size: 1rem; }
 
     .field-label { display: block; font-size: 0.95rem; font-weight: 700; color: var(--text-dim); margin-bottom: 0.5rem; }
-    .import-container { display: flex; gap: 0.8rem; }
+    .import-container { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    .import-container input { flex: 1; min-width: 200px; }
 
     input[type="text"] {
-        flex-grow: 1; background: var(--surface); color: var(--text); border: 3px solid var(--border);
+        background: var(--surface); color: var(--text); border: 3px solid var(--border);
         padding: 0.8rem 1rem; font-size: 1rem; border-radius: 12px; font-family: inherit; font-weight: 600;
     }
 
@@ -349,7 +498,7 @@
         display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem;
         background: var(--surface); padding: 0.9rem 1rem; border-radius: 12px; border: 2px solid var(--border); cursor: pointer;
     }
-    .checkbox-container input { width: 1.3rem; height: 1.3rem; accent-color: var(--accent); cursor: pointer; }
+    .checkbox-container input { width: 1.3rem; height: 1.3rem; accent-color: var(--accent); cursor: pointer; flex: none; }
     .checkbox-container span { font-size: 1rem; font-weight: 700; color: var(--text); }
 
     textarea {
@@ -357,15 +506,15 @@
         margin-top: 1.5rem; padding: 1rem; font-size: 0.95rem; border-radius: 12px;
         font-family: monospace; height: 12rem; resize: vertical; line-height: 1.4;
     }
-    input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+    input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
     ::placeholder { color: var(--text-faint); }
 
-    #import-msg { margin-top: 0.6rem; font-size: 0.9rem; font-weight: 700; }
+    #import-msg { margin-top: 0.6rem; font-size: 0.9rem; font-weight: 700; min-height: 1.2em; }
     #import-msg.ok { color: var(--ok); }
     #import-msg.err { color: var(--danger); }
-    .settings-actions { margin-top: 1.8rem; display: flex; gap: 1rem; }
+    .settings-actions { margin-top: 1.8rem; display: flex; gap: 1rem; flex-wrap: wrap; }
 
-    /* ---------- ADAPTAÇÃO RESPONSIVA PARA CELULARES E TABLETS (Mobile First) ---------- */
+    /* ---------- Responsivo ---------- */
     @media (max-width: 900px) {
         body { padding-left: 0; padding-bottom: 5rem; height: auto; min-height: 100vh; overflow-y: auto; }
         .rail {
@@ -380,27 +529,27 @@
             padding-bottom: 2rem;
         }
         .player-container {
-            height: 300px;
-            order: -1; /* Coloca o player no topo em celulares quando ativo */
+            order: -1;
             margin-bottom: 15px;
         }
-        .sidebar-panel { height: 400px; }
+        .player-stage { flex-grow: 0; aspect-ratio: 16 / 9; }
+        .sidebar-panel { height: 420px; }
+        .clock { display: none; }
+        .search-bar, .search-bar.open { margin-left: 16px; margin-right: 16px; }
+        .view-header { padding-left: 16px; padding-right: 16px; flex-wrap: wrap; }
+        .main-layout { padding-left: 16px; padding-right: 16px; }
     }
 </style>
 </head>
 <body>
 
 <aside class="rail" aria-label="Navegação principal">
-    <span class="rail-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#07080a"/></svg></span>
+    <span class="rail-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#07080a"/></svg></span>
     <button id="rail-search" class="rail-btn" aria-label="Buscar" aria-pressed="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
     </button>
     <button id="rail-home" class="rail-btn" aria-label="Início">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 9v11a1 1 0 0 0 1 1h3v-7h6v7h3a1 1 0 0 0 1-1V9"/></svg>
-    </button>
-    <!-- Botão de Instalação PWA -->
-    <button id="rail-install" class="rail-btn" aria-label="Instalar Aplicativo" title="Instalar App" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </button>
     <span class="rail-spacer"></span>
     <button id="rail-settings" class="rail-btn" aria-label="Configurações">
@@ -419,31 +568,45 @@
 <div class="view-header">
     <div class="view-title-wrap">
         <button id="btn-back" class="back-btn">← Voltar</button>
-        <h1 id="view-title">Início</h1>
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#07080a"/></svg></span>
+            <h1 id="view-title">Início</h1>
+        </div>
+    </div>
+    <div class="header-right">
+        <span class="clock" id="clock" aria-hidden="true"></span>
+        <button id="install-btn" class="install-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Instalar App
+        </button>
     </div>
 </div>
 
 <main class="main-layout">
     <div class="sidebar-panel">
-        <button class="scroll-btn-top" onclick="scrollPanel(-280)" title="Subir Lista">
+        <button class="scroll-btn-top" id="scroll-top" title="Subir Lista">
             <svg viewBox="0 0 24 24"><path d="M7 14l5-5 5 5z"/></svg>
         </button>
 
         <div class="panel-scroll" id="panel-content"></div>
 
-        <button class="scroll-btn-bottom" onclick="scrollPanel(280)" title="Descer Lista">
+        <button class="scroll-btn-bottom" id="scroll-bottom" title="Descer Lista">
             <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
         </button>
     </div>
 
     <div class="player-container">
         <div class="player-topbar">
-            <span id="player-title">Nenhum canal selecionado</span>
+            <span class="now"><span class="dot" aria-hidden="true"></span><span id="player-title">Nenhum canal selecionado</span></span>
+            <button class="fs-btn" id="btn-fullscreen" title="Tela cheia" aria-label="Tela cheia">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            </button>
         </div>
         <div class="player-stage" id="player-stage">
             <div class="player-placeholder">
+                <span class="big-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 8.5v5l4.5-2.5L8 8.5z" fill="currentColor" stroke="none"/></svg></span>
                 <h3>Como Assistir</h3>
-                <p>Escolha um canal ao lado para começar a ver.</p>
+                <p>Escolha um canal ao lado para começar a ver. Use as setas do controle remoto para navegar.</p>
             </div>
         </div>
     </div>
@@ -480,47 +643,43 @@
 </div>
 
 <script>
-    /* ---------- Geração dinâmica do PWA (Manifest e Service Worker) ---------- */
-    const manifestBlob = new Blob([JSON.stringify({
-        name: "Portal Smart TV",
-        short_name: "Portal",
-        start_url: window.location.href,
-        display: "standalone",
-        background_color: "#07080a",
-        theme_color: "#07080a",
-        icons: [{ src: "https://img.icons8.com/fluency/96/tv.png", sizes: "96x96", type: "image/png" }]
-    }, null, 2)], { type: 'application/json' });
-    
-    const manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    manifestLink.href = URL.createObjectURL(manifestBlob);
-    document.head.appendChild(manifestLink);
+    /* ---------- Service Worker (arquivo real, mesma origem) ---------- */
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
 
-    let deferredPrompt;
-    const railInstall = document.getElementById('rail-install');
+    /* ---------- Instalação PWA ---------- */
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('install-btn');
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        railInstall.style.display = 'flex';
+        installBtn.style.display = 'flex';
     });
 
-    railInstall.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                railInstall.style.display = 'none';
-            }
-            deferredPrompt = null;
-        }
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') installBtn.style.display = 'none';
+        deferredPrompt = null;
     });
 
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('data:text/javascript,self.addEventListener("fetch",function(e){});').catch(() => {});
+    window.addEventListener('appinstalled', () => {
+        installBtn.style.display = 'none';
+        deferredPrompt = null;
+    });
+
+    /* ---------- Relógio do cabeçalho ---------- */
+    const clockEl = document.getElementById('clock');
+    function tickClock() {
+        clockEl.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     }
+    tickClock();
+    setInterval(tickClock, 15000);
 
-    /* ---------- Lógica do Portal ---------- */
+    /* ---------- Referências ---------- */
     const panelContent = document.getElementById('panel-content');
     const viewTitle = document.getElementById('view-title');
     const btnBack = document.getElementById('btn-back');
@@ -538,11 +697,13 @@
 
     const playerStage = document.getElementById('player-stage');
     const playerTitle = document.getElementById('player-title');
+    const playerContainer = document.querySelector('.player-container');
 
     let parsedData = { template: '', categories: {} };
     let currentView = 'home';
     let activeCategory = null;
     let currentHls = null;
+    let activeChannelName = null;
 
     function loadConfig() {
         return localStorage.getItem('portal_configText') || '';
@@ -553,9 +714,10 @@
         return val !== null ? val === 'true' : true;
     }
 
-    function scrollPanel(amount) {
-        panelContent.scrollBy({ top: amount, behavior: 'smooth' });
-    }
+    document.getElementById('scroll-top').addEventListener('click', () => panelContent.scrollBy({ top: -280, behavior: 'smooth' }));
+    document.getElementById('scroll-bottom').addEventListener('click', () => panelContent.scrollBy({ top: 280, behavior: 'smooth' }));
+
+    const PLAY_SVG = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5z"/></svg>';
 
     function parseConfig(configText) {
         const categories = {};
@@ -568,7 +730,7 @@
         const template = templateLine.replace(/"/g, '').trim();
 
         for (let i = 1; i < lines.length; i++) {
-            let currentLine = lines[i];
+            const currentLine = lines[i];
             let parts = [];
 
             if (currentLine.includes('\t')) parts = currentLine.split('\t');
@@ -589,6 +751,20 @@
         return { template, categories };
     }
 
+    function buildLink(item) {
+        let link = parsedData.template;
+        if (link.includes('[CANAL]')) link = link.split('[CANAL]').join(item.id);
+        else if (link.includes('[ID]')) link = link.split('[ID]').join(item.id);
+        return link;
+    }
+
+    function focusFirstCard() {
+        setTimeout(() => {
+            const first = panelContent.querySelector('.nav-card, .cat-card');
+            if (first) first.focus();
+        }, 60);
+    }
+
     function renderHome() {
         const useCategories = loadUseCategories();
         parsedData = parseConfig(loadConfig());
@@ -605,7 +781,7 @@
                     <button class="btn primary" id="btn-empty-settings" style="margin-top:15px;">Configurar Agora</button>
                 </div>`;
             const btn = document.getElementById('btn-empty-settings');
-            if(btn) btn.addEventListener('click', openModal);
+            if (btn) btn.addEventListener('click', openModal);
             return;
         }
 
@@ -614,15 +790,21 @@
             viewTitle.textContent = 'Escolha uma Categoria';
             btnBack.style.display = 'none';
 
-            let html = '';
+            let html = '<div class="grid-categories">';
             for (const catName in categories) {
                 const count = categories[catName].length;
-                html += `<button type="button" class="nav-card" onclick="openCategory('${catName.replace(/'/g, "\\'")}')">
+                html += `<button type="button" class="cat-card" data-cat="${catName.replace(/"/g, '&quot;')}">
+                            <svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 21h8"/></svg>
                             <span class="label">${catName}</span>
-                            <span class="badge">${count}</span>
+                            <span class="badge">${count} canais</span>
                          </button>`;
             }
+            html += '</div>';
             panelContent.innerHTML = html;
+
+            panelContent.querySelectorAll('.cat-card').forEach(card => {
+                card.addEventListener('click', () => openCategory(card.dataset.cat));
+            });
         } else {
             currentView = 'all-channels';
             viewTitle.textContent = 'Todos os Canais';
@@ -631,31 +813,34 @@
             let allChannels = [];
             for (const catName in categories) {
                 categories[catName].forEach(item => {
-                    let link = parsedData.template;
-                    if (link.includes('[CANAL]')) link = link.split('[CANAL]').join(item.id);
-                    else if (link.includes('[ID]')) link = link.split('[ID]').join(item.id);
-                    allChannels.push({ name: item.name, link, category: catName });
+                    allChannels.push({ name: item.name, link: buildLink(item), category: catName });
                 });
             }
-
             allChannels.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
-
-            let html = '';
-            allChannels.forEach(item => {
-                const safeName = item.name.replace(/"/g, '&quot;');
-                html += `<button type="button" class="nav-card" 
-                            onclick="openPlayer('${item.link.replace(/'/g, "\\'")}', '${safeName.replace(/'/g, "\\'")}')">
-                            <span class="label">${item.name}</span>
-                            <span style="font-size:0.8rem; font-weight:700; color:var(--text-faint);">ASSISTIR ▶</span>
-                         </button>`;
-            });
-            panelContent.innerHTML = html;
+            panelContent.innerHTML = channelListHTML(allChannels);
+            bindChannelCards();
         }
 
-        setTimeout(() => {
-            const first = panelContent.querySelector('.nav-card');
-            if (first) first.focus();
-        }, 50);
+        focusFirstCard();
+    }
+
+    function channelListHTML(items) {
+        let html = '';
+        items.forEach(item => {
+            const safeName = item.name.replace(/"/g, '&quot;');
+            const sub = item.category ? `<small>Categoria: ${item.category}</small>` : '';
+            html += `<button type="button" class="nav-card" data-url="${item.link.replace(/"/g, '&quot;')}" data-name="${safeName}">
+                        <span class="label">${item.name}${sub}</span>
+                        <span class="play-hint">${PLAY_SVG} Assistir</span>
+                     </button>`;
+        });
+        return html || '<div class="empty-state"><h3>Nenhum canal encontrado com esse nome</h3></div>';
+    }
+
+    function bindChannelCards() {
+        panelContent.querySelectorAll('.nav-card').forEach(card => {
+            card.addEventListener('click', () => openPlayer(card.dataset.url, card.dataset.name));
+        });
     }
 
     function openCategory(catName) {
@@ -664,31 +849,15 @@
         viewTitle.textContent = catName;
         btnBack.style.display = 'block';
 
-        const items = parsedData.categories[catName] || [];
-        let html = '';
-        items.forEach(item => {
-            let link = parsedData.template;
-            if (link.includes('[CANAL]')) link = link.split('[CANAL]').join(item.id);
-            else if (link.includes('[ID]')) link = link.split('[ID]').join(item.id);
-
-            const safeName = item.name.replace(/"/g, '&quot;');
-            html += `<button type="button" class="nav-card" 
-                        onclick="openPlayer('${link.replace(/'/g, "\\'")}', '${safeName.replace(/'/g, "\\'")}')">
-                        <span class="label">${item.name}</span>
-                        <span style="font-size:0.8rem; font-weight:700; color:var(--text-faint);">ASSISTIR ▶</span>
-                     </button>`;
-        });
-        panelContent.innerHTML = html;
-
-        setTimeout(() => {
-            const first = panelContent.querySelector('.nav-card');
-            if (first) first.focus();
-        }, 50);
+        const items = (parsedData.categories[catName] || []).map(item => ({
+            name: item.name, link: buildLink(item), category: null
+        }));
+        panelContent.innerHTML = channelListHTML(items);
+        bindChannelCards();
+        focusFirstCard();
     }
 
-    btnBack.addEventListener('click', () => {
-        renderHome();
-    });
+    btnBack.addEventListener('click', renderHome);
 
     /* ---------- Busca ---------- */
     function applySearch() {
@@ -702,23 +871,16 @@
         viewTitle.textContent = 'Resultados da Busca';
         btnBack.style.display = 'block';
 
-        let html = '';
+        let results = [];
         for (const catName in parsedData.categories) {
             parsedData.categories[catName].forEach(item => {
                 if (item.name.toLowerCase().includes(query)) {
-                    let link = parsedData.template;
-                    if (link.includes('[CANAL]')) link = link.split('[CANAL]').join(item.id);
-                    else if (link.includes('[ID]')) link = link.split('[ID]').join(item.id);
-
-                    const safeName = item.name.replace(/"/g, '&quot;');
-                    html += `<button type="button" class="nav-card" 
-                                onclick="openPlayer('${link.replace(/'/g, "\\'")}', '${safeName.replace(/'/g, "\\'")}')">
-                                <span class="label">${item.name} <small style="color:var(--text-dim); display:block; font-size:0.85rem; margin-top:4px;">Categoria: ${catName}</small></span>
-                             </button>`;
+                    results.push({ name: item.name, link: buildLink(item), category: catName });
                 }
             });
         }
-        panelContent.innerHTML = html || '<div class="empty-state"><h3>Nenhum canal encontrado com esse nome</h3></div>';
+        panelContent.innerHTML = channelListHTML(results);
+        bindChannelCards();
     }
     inputSearch.addEventListener('input', applySearch);
 
@@ -737,8 +899,31 @@
 
     railHome.addEventListener('click', () => {
         searchBar.classList.remove('open');
+        railSearch.setAttribute('aria-pressed', 'false');
         inputSearch.value = '';
         renderHome();
+    });
+
+    /* ---------- Navegação por setas (controle remoto / teclado) ---------- */
+    document.addEventListener('keydown', (e) => {
+        const tag = (document.activeElement && document.activeElement.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        if (settingsModal.classList.contains('open')) {
+            if (e.key === 'Escape') closeModal();
+            return;
+        }
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+
+        const cards = Array.from(panelContent.querySelectorAll('.nav-card, .cat-card'));
+        if (!cards.length) return;
+        const idx = cards.indexOf(document.activeElement);
+        e.preventDefault();
+        if (e.key === 'ArrowDown') {
+            (cards[idx + 1] || cards[0]).focus();
+        } else {
+            (cards[idx - 1] || cards[0]).focus();
+        }
+        document.activeElement.scrollIntoView({ block: 'nearest' });
     });
 
     /* ---------- Player ---------- */
@@ -753,9 +938,14 @@
 
     function openPlayer(url, name) {
         if (!url) return;
-        playerTitle.textContent = "Assistindo: " + name;
+        activeChannelName = name;
+        playerTitle.textContent = name;
         playerStage.innerHTML = '';
         if (currentHls) { currentHls.destroy(); currentHls = null; }
+
+        panelContent.querySelectorAll('.nav-card').forEach(c => {
+            c.classList.toggle('active', c.dataset.name === name);
+        });
 
         const isHls = /\.m3u8(\?|$)/i.test(url);
         const isDirectVideo = /\.(mp4|webm|ogg|mov|mkv)(\?|$)/i.test(url);
@@ -789,11 +979,18 @@
             playerStage.appendChild(iframe);
         }
 
-        // Em telas pequenas, rola automaticamente para o player ao selecionar
         if (window.innerWidth <= 900) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
+
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else if (playerContainer.requestFullscreen) {
+            playerContainer.requestFullscreen();
+        }
+    });
 
     /* ---------- Configurações ---------- */
     function setImportMsg(text, type) {
@@ -808,16 +1005,14 @@
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error('Erro');
-            const text = await response.text();
-            inputConfig.value = text;
+            inputConfig.value = await response.text();
             setImportMsg('Lista carregada com sucesso!', 'ok');
         } catch (error) {
             try {
-                const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
                 const responseProxy = await fetch(proxyUrl);
                 if (!responseProxy.ok) throw new Error('Erro');
-                const text = await responseProxy.text();
-                inputConfig.value = text;
+                inputConfig.value = await responseProxy.text();
                 setImportMsg('Lista carregada com sucesso!', 'ok');
             } catch (errProxy) {
                 setImportMsg('Não foi possível carregar este link.', 'err');
@@ -830,26 +1025,30 @@
         chkCategories.checked = loadUseCategories();
         setImportMsg('', '');
         inputLink.value = '';
-        settingsModal.style.display = 'block';
+        settingsModal.classList.add('open');
         inputLink.focus();
     }
     function closeModal() {
-        settingsModal.style.display = 'none';
+        settingsModal.classList.remove('open');
         railSettings.focus();
     }
     railSettings.addEventListener('click', openModal);
     document.getElementById('btn-close').addEventListener('click', closeModal);
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) closeModal();
+    });
 
     document.getElementById('btn-save').addEventListener('click', () => {
         localStorage.setItem('portal_configText', inputConfig.value);
         localStorage.setItem('portal_useCategories', chkCategories.checked);
-        settingsModal.style.display = 'none';
+        settingsModal.classList.remove('open');
         searchBar.classList.remove('open');
+        railSearch.setAttribute('aria-pressed', 'false');
         inputSearch.value = '';
         renderHome();
     });
 
-    window.onload = () => { renderHome(); };
+    renderHome();
 </script>
 </body>
 </html>
