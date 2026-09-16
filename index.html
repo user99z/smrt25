@@ -28,7 +28,6 @@
     }
 
     * { box-sizing: border-box; }
-    
     html { font-size: 22px; } 
 
     body {
@@ -163,6 +162,33 @@
         overflow: hidden;
     }
 
+    /* Botão de Rolagem no Topo */
+    .scroll-btn-top {
+        background: var(--bg-elevated);
+        color: var(--text-dim);
+        border: none;
+        border-bottom: 2px solid var(--border);
+        width: 100%;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+    .scroll-btn-top svg, .scroll-btn-bottom svg {
+        width: 1.4rem;
+        height: 1.4rem;
+        fill: currentColor;
+    }
+    .scroll-btn-top:hover, .scroll-btn-top:focus-visible,
+    .scroll-btn-bottom:hover, .scroll-btn-bottom:focus-visible {
+        background: var(--accent);
+        color: var(--bg);
+        outline: none;
+    }
+
     .panel-scroll {
         flex-grow: 1;
         overflow-y: auto;
@@ -170,15 +196,32 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
+        scroll-behavior: smooth;
     }
     .panel-scroll::-webkit-scrollbar { width: 10px; }
     .panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+
+    /* Botão de Rolagem na Base */
+    .scroll-btn-bottom {
+        background: var(--bg-elevated);
+        color: var(--text-dim);
+        border: none;
+        border-top: 2px solid var(--border);
+        width: 100%;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
 
     .nav-card {
         appearance: none;
         background: var(--surface);
         border: 3px solid var(--border);
-        padding: 20px 24px;
+        padding: 20px 22px;
         border-radius: 16px;
         cursor: pointer;
         display: flex;
@@ -191,20 +234,28 @@
     }
     .nav-card .label {
         font-family: 'Outfit', sans-serif;
-        font-size: 1.25rem;
+        font-size: 1.2rem;
         font-weight: 700;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        flex-grow: 1;
+        padding-right: 12px;
     }
+    
     .nav-card .badge {
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         background: var(--bg);
-        padding: 4px 12px;
-        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         color: var(--text-dim);
         font-weight: 700;
-        border: 1px solid var(--border);
+        border: 2px solid var(--border);
+        flex-shrink: 0;
     }
 
     .nav-card:hover, .nav-card:focus-visible {
@@ -218,6 +269,16 @@
     .nav-card:hover .badge, .nav-card:focus-visible .badge {
         background: var(--bg);
         color: var(--text);
+        border-color: var(--bg);
+    }
+
+    .category-section-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--accent);
+        margin: 14px 0 6px 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
     }
 
     .hidden { display: none !important; }
@@ -293,7 +354,7 @@
     }
     .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 800; }
 
-    /* ---------- Modal de Configurações Amigável ---------- */
+    /* ---------- Modal de Configurações ---------- */
     #settings-modal {
         display: none; position: fixed; inset: 0; background: rgba(7, 8, 10, 0.92);
         backdrop-filter: blur(6px); z-index: 100; padding: var(--safe-y) var(--safe-x); overflow-y: auto;
@@ -314,10 +375,33 @@
         padding: 1rem 1.2rem; font-size: 1.1rem; border-radius: 12px; font-family: inherit; font-weight: 600;
     }
 
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1.8rem;
+        background: var(--surface);
+        padding: 1rem 1.2rem;
+        border-radius: 12px;
+        border: 2px solid var(--border);
+        cursor: pointer;
+    }
+    .checkbox-container input {
+        width: 1.5rem;
+        height: 1.5rem;
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+    .checkbox-container span {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
     textarea {
         width: 100%; background: var(--surface); color: var(--text); border: 3px solid var(--border);
         margin-top: 1.8rem; padding: 1.2rem; font-size: 1.05rem; border-radius: 12px;
-        font-family: monospace; height: 16rem; resize: vertical; line-height: 1.5;
+        font-family: monospace; height: 14rem; resize: vertical; line-height: 1.5;
     }
     input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
     ::placeholder { color: var(--text-faint); font-size: 1.05rem; }
@@ -342,7 +426,7 @@
     <button id="rail-settings" class="rail-btn" aria-label="Configurações">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l.06-.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
     </button>
 </aside>
@@ -354,14 +438,24 @@
 
 <div class="view-header">
     <div class="view-title-wrap">
-        <button id="btn-back" class="back-btn">← Voltar às Categorias</button>
-        <h1 id="view-title">Categorias</h1>
+        <button id="btn-back" class="back-btn">← Voltar</button>
+        <h1 id="view-title">Início</h1>
     </div>
 </div>
 
 <main class="main-layout">
     <div class="sidebar-panel">
+        <!-- Botão para Subir no Topo -->
+        <button class="scroll-btn-top" onclick="scrollPanel(-280)" title="Subir Lista">
+            <svg viewBox="0 0 24 24"><path d="M7 14l5-5 5 5z"/></svg>
+        </button>
+
         <div class="panel-scroll" id="panel-content"></div>
+
+        <!-- Botão para Descer na Base -->
+        <button class="scroll-btn-bottom" onclick="scrollPanel(280)" title="Descer Lista">
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
     </div>
 
     <div class="player-container">
@@ -371,7 +465,7 @@
         <div class="player-stage" id="player-stage">
             <div class="player-placeholder">
                 <h3>Como Assistir</h3>
-                <p>Escolha uma categoria ao lado, depois clique no canal desejado para começar a ver.</p>
+                <p>Escolha um canal ao lado para começar a ver.</p>
             </div>
         </div>
     </div>
@@ -382,7 +476,7 @@
     <div class="settings-content">
         <div class="settings-header">
             <h2 id="settings-title">Configurações</h2>
-            <p>Adicione sua lista de canais por link ou colando o texto diretamente.</p>
+            <p>Gerencie suas listas e opções de visualização.</p>
         </div>
 
         <label class="field-label" for="input-link">Endereço da Lista (Link)</label>
@@ -392,7 +486,12 @@
         </div>
         <div id="import-msg"></div>
 
-        <label class="field-label" for="input-config" style="margin-top:2rem;">Ou Cole o Conteúdo da Lista</label>
+        <label class="checkbox-container">
+            <input type="checkbox" id="chk-categories">
+            <span>Separar canais por categorias na tela inicial</span>
+        </label>
+
+        <label class="field-label" for="input-config" style="margin-top:1.5rem;">Ou Cole o Conteúdo da Lista</label>
         <textarea id="input-config" placeholder="Cole o texto da lista aqui..."></textarea>
 
         <div class="settings-actions">
@@ -409,6 +508,7 @@
     const settingsModal = document.getElementById('settings-modal');
     const inputConfig = document.getElementById('input-config');
     const inputLink = document.getElementById('input-link');
+    const chkCategories = document.getElementById('chk-categories');
     const inputSearch = document.getElementById('input-search');
     const searchBar = document.getElementById('search-bar');
     const railSearch = document.getElementById('rail-search');
@@ -421,12 +521,21 @@
     const playerTitle = document.getElementById('player-title');
 
     let parsedData = { template: '', categories: {} };
-    let currentView = 'categories';
+    let currentView = 'home';
     let activeCategory = null;
     let currentHls = null;
 
     function loadConfig() {
         return localStorage.getItem('portal_configText') || '';
+    }
+
+    function loadUseCategories() {
+        const val = localStorage.getItem('portal_useCategories');
+        return val !== null ? val === 'true' : true;
+    }
+
+    function scrollPanel(amount) {
+        panelContent.scrollBy({ top: amount, behavior: 'smooth' });
     }
 
     function parseConfig(configText) {
@@ -461,14 +570,15 @@
         return { template, categories };
     }
 
-    function renderCategories() {
-        currentView = 'categories';
-        activeCategory = null;
-        viewTitle.textContent = 'Escolha uma Categoria';
-        btnBack.style.display = 'none';
-
+    function renderHome() {
+        const useCategories = loadUseCategories();
+        parsedData = parseConfig(loadConfig());
         const categories = parsedData.categories;
+
         if (Object.keys(categories).length === 0) {
+            currentView = 'home';
+            viewTitle.textContent = 'Início';
+            btnBack.style.display = 'none';
             panelContent.innerHTML = `
                 <div class="empty-state">
                     <h3>Nenhum canal encontrado</h3>
@@ -480,15 +590,48 @@
             return;
         }
 
-        let html = '';
-        for (const catName in categories) {
-            const count = categories[catName].length;
-            html += `<button type="button" class="nav-card" onclick="openCategory('${catName.replace(/'/g, "\\'")}')">
-                        <span class="label">${catName}</span>
-                        <span class="badge">${count} canais</span>
-                     </button>`;
+        if (useCategories) {
+            currentView = 'categories-home';
+            viewTitle.textContent = 'Escolha uma Categoria';
+            btnBack.style.display = 'none';
+
+            let html = '';
+            for (const catName in categories) {
+                const count = categories[catName].length;
+                html += `<button type="button" class="nav-card" onclick="openCategory('${catName.replace(/'/g, "\\'")}')">
+                            <span class="label">${catName}</span>
+                            <span class="badge">${count}</span>
+                         </button>`;
+            }
+            panelContent.innerHTML = html;
+        } else {
+            currentView = 'all-channels';
+            viewTitle.textContent = 'Todos os Canais';
+            btnBack.style.display = 'none';
+
+            let allChannels = [];
+            for (const catName in categories) {
+                categories[catName].forEach(item => {
+                    let link = parsedData.template;
+                    if (link.includes('[CANAL]')) link = link.split('[CANAL]').join(item.id);
+                    else if (link.includes('[ID]')) link = link.split('[ID]').join(item.id);
+                    allChannels.push({ name: item.name, link, category: catName });
+                });
+            }
+
+            allChannels.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+
+            let html = '';
+            allChannels.forEach(item => {
+                const safeName = item.name.replace(/"/g, '&quot;');
+                html += `<button type="button" class="nav-card" 
+                            onclick="openPlayer('${item.link.replace(/'/g, "\\'")}', '${safeName.replace(/'/g, "\\'")}')">
+                            <span class="label">${item.name}</span>
+                            <span style="font-size:0.8rem; font-weight:700; color:var(--text-faint);">ASSISTIR ▶</span>
+                         </button>`;
+            });
+            panelContent.innerHTML = html;
         }
-        panelContent.innerHTML = html;
 
         setTimeout(() => {
             const first = panelContent.querySelector('.nav-card');
@@ -497,7 +640,7 @@
     }
 
     function openCategory(catName) {
-        currentView = 'channels';
+        currentView = 'category-details';
         activeCategory = catName;
         viewTitle.textContent = catName;
         btnBack.style.display = 'block';
@@ -525,20 +668,14 @@
     }
 
     btnBack.addEventListener('click', () => {
-        renderCategories();
+        renderHome();
     });
-
-    function initPortal() {
-        parsedData = parseConfig(loadConfig());
-        renderCategories();
-    }
 
     /* ---------- Busca ---------- */
     function applySearch() {
         const query = inputSearch.value.trim().toLowerCase();
         if (!query) {
-            if (currentView === 'categories') renderCategories();
-            else openCategory(activeCategory);
+            renderHome();
             return;
         }
 
@@ -571,7 +708,7 @@
             searchBar.classList.remove('open');
             railSearch.setAttribute('aria-pressed', 'false');
             inputSearch.value = '';
-            renderCategories();
+            renderHome();
         } else {
             searchBar.classList.add('open');
             railSearch.setAttribute('aria-pressed', 'true');
@@ -582,7 +719,7 @@
     railHome.addEventListener('click', () => {
         searchBar.classList.remove('open');
         inputSearch.value = '';
-        renderCategories();
+        renderHome();
     });
 
     /* ---------- Player ---------- */
@@ -666,6 +803,7 @@
 
     function openModal() {
         inputConfig.value = loadConfig();
+        chkCategories.checked = loadUseCategories();
         setImportMsg('', '');
         inputLink.value = '';
         settingsModal.style.display = 'block';
@@ -680,13 +818,14 @@
 
     document.getElementById('btn-save').addEventListener('click', () => {
         localStorage.setItem('portal_configText', inputConfig.value);
+        localStorage.setItem('portal_useCategories', chkCategories.checked);
         settingsModal.style.display = 'none';
         searchBar.classList.remove('open');
         inputSearch.value = '';
-        initPortal();
+        renderHome();
     });
 
-    window.onload = () => { initPortal(); };
+    window.onload = () => { renderHome(); };
 </script>
 </body>
 </html>
