@@ -1,239 +1,809 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal</title>
-    <style>
-        :root {
-            --bg-color: #0f1014;
-            --card-bg: #1e1f26;
-            --text-color: #ffffff;
-            --focus-color: #00e676; 
-            --modal-bg: rgba(0, 0, 0, 0.9);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #0a0b0f;
+        --rail-bg: #0d0e13;
+        --bg-elevated: #12141c;
+        --surface: #181b24;
+        --surface-hover: #1f232f;
+        --border: #262a37;
+        --text: #f4f5f7;
+        --text-dim: #9a9eae;
+        --text-faint: #5b6070;
+        --accent: #ffb648;
+        --accent-soft: rgba(255, 182, 72, 0.18);
+        --danger: #ff6b6b;
+        --ok: #6bd68f;
+        --rail-w: 5rem;
+        --safe-x: clamp(20px, 3.2vw, 48px);
+        --safe-y: clamp(18px, 3vh, 40px);
+    }
 
-        body {
-            background-color: var(--bg-color); color: var(--text-color);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; padding: 30px; overflow-x: hidden;
-        }
+    * { box-sizing: border-box; }
+    html { font-size: 18px; }
+    @media (min-width: 1400px) { html { font-size: 20px; } }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        h1 { font-size: 2.5rem; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        padding-left: var(--rail-w);
+        padding-bottom: 4.2rem;
+    }
 
-        .btn {
-            background-color: #333; color: white; border: 2px solid transparent;
-            padding: 10px 20px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; transition: all 0.2s;
-        }
-        .btn:focus, .btn:hover {
-            border-color: var(--focus-color); background-color: #444; outline: none; box-shadow: 0 0 10px var(--focus-color);
-        }
+    button { font-family: inherit; }
 
-        h2 { font-size: 1.8rem; margin-top: 40px; margin-bottom: 15px; border-left: 5px solid var(--focus-color); padding-left: 10px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    /* ---------- Left icon rail ---------- */
+    .rail {
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        width: var(--rail-w);
+        background: var(--rail-bg);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.6rem;
+        padding: var(--safe-y) 0;
+        z-index: 60;
+    }
+    .rail-mark {
+        width: 2.2rem; height: 2.2rem; border-radius: 8px; background: var(--accent);
+        display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; flex: none;
+    }
+    .rail-mark svg { width: 1.15rem; height: 1.15rem; }
 
-        .item-card {
-            background-color: var(--card-bg); color: var(--text-color); text-decoration: none;
-            padding: 20px 15px; border-radius: 10px; text-align: center; font-size: 1.2rem; font-weight: bold;
-            border: 4px solid transparent; transition: all 0.2s ease-in-out; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            display: flex; align-items: center; justify-content: center; min-height: 80px;
-            animation: fadeIn 0.5s ease-out both;
-        }
-        .item-card:focus, .item-card:hover {
-            border-color: var(--focus-color); background-color: #2a2b33; transform: scale(1.05);
-            outline: none; box-shadow: 0 0 15px var(--focus-color); z-index: 10;
-        }
+    .rail-btn {
+        width: 2.9rem; height: 2.9rem;
+        background: transparent; color: var(--text-dim);
+        border: 2px solid transparent; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .rail-btn svg { width: 1.35rem; height: 1.35rem; }
+    .rail-btn:hover, .rail-btn:focus-visible {
+        color: var(--text); border-color: var(--accent); background: var(--surface);
+        box-shadow: 0 0 0 4px var(--accent-soft); outline: none; transform: translateX(2px);
+    }
+    .rail-btn[aria-pressed="true"] { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+    .rail-spacer { flex: 1; }
 
-        #settings-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--modal-bg); z-index: 100; padding: 40px; box-sizing: border-box; overflow-y: auto;
-        }
-        .settings-content { max-width: 800px; margin: 0 auto; background-color: var(--card-bg); padding: 30px; border-radius: 12px; }
-        
-        .import-container { display: flex; gap: 10px; margin-top: 20px; }
-        
-        input[type="text"] {
-            flex-grow: 1; background-color: #111; color: white; border: 2px solid #333;
-            padding: 15px; font-size: 1.1rem; border-radius: 8px; box-sizing: border-box; font-family: monospace;
-        }
-        
-        textarea {
-            width: 100%; background-color: #111; color: white; border: 2px solid #333; margin-top: 15px;
-            padding: 15px; font-size: 1.1rem; border-radius: 8px; box-sizing: border-box; font-family: monospace;
-            height: 350px; resize: vertical; white-space: pre; overflow-wrap: normal; overflow-x: auto;
-        }
-        input:focus, textarea:focus { border-color: var(--focus-color); outline: none; }
-        
-        /* Modifica a cor do placeholder para ficar sutil e elegante */
-        ::placeholder { color: #666; font-family: 'Segoe UI', sans-serif; font-size: 1rem; }
-        
-        .settings-actions { margin-top: 30px; display: flex; gap: 15px; }
-        #import-msg { margin-top: 10px; font-size: 1rem; color: var(--focus-color); }
+    /* ---------- Search bar ---------- */
+    .search-bar {
+        display: none;
+        align-items: center;
+        gap: 0.7rem;
+        margin: var(--safe-y) var(--safe-x) 0;
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        padding: 0.2rem 1rem;
+    }
+    .search-bar.open { display: flex; }
+    .search-bar svg { width: 1.1rem; height: 1.1rem; color: var(--text-faint); flex: none; }
+    .search-bar input {
+        flex: 1; background: transparent; border: none; color: var(--text);
+        font-size: 1rem; padding: 0.85rem 0; font-family: inherit;
+    }
+    .search-bar input:focus { outline: none; }
+    .search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    /* ---------- Page head ---------- */
+    .pagehead { padding: var(--safe-y) var(--safe-x) 0.4rem; }
+    h1 { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.7rem; margin: 0; letter-spacing: 0.01em; }
+
+    /* ---------- Content rows ---------- */
+    main { padding: 0.6rem 0 0; }
+
+    .category-container { margin-top: 2rem; }
+    .category-container:first-child { margin-top: 0.8rem; }
+
+    h2 {
+        font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1.15rem;
+        margin: 0 0 0.9rem; padding: 0 var(--safe-x); color: var(--text);
+    }
+
+    .row-track {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding: 0.3rem var(--safe-x) 1rem;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        cursor: grab;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+    }
+    .row-track::-webkit-scrollbar { display: none; }
+    .row-track.dragging { cursor: grabbing; scroll-behavior: auto; user-select: none; }
+    .row-track.dragging .item-card { pointer-events: none; }
+
+    /* ---------- Channel tile card ---------- */
+    .item-card {
+        appearance: none;
+        background: transparent;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        flex: none;
+        width: 9.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.55rem;
+        animation: fadeIn 0.35s ease-out both;
+        scroll-snap-align: start;
+    }
+
+    .tile {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 2.1rem;
+        color: rgba(255,255,255,0.94);
+        text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+        border: 2px solid transparent;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    .item-card .label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color 0.15s ease;
+    }
+
+    .item-card:hover .tile, .item-card:focus-visible .tile {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px var(--accent-soft), 0 10px 24px rgba(0,0,0,0.4);
+        transform: translateY(-4px) scale(1.04);
+        outline: none;
+    }
+    .item-card:hover .label, .item-card:focus-visible .label { color: var(--text); }
+    .item-card:focus-visible { outline: none; }
+
+    .hidden { display: none !important; }
+
+    /* ---------- Empty state ---------- */
+    .empty-state {
+        display: flex; flex-direction: column; align-items: center; text-align: center;
+        gap: 1.1rem; padding: 5rem 1rem; color: var(--text-dim);
+    }
+    .empty-state .icon {
+        width: 3.6rem; height: 3.6rem; border-radius: 14px; background: var(--surface);
+        border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-faint);
+    }
+    .empty-state .icon svg { width: 1.6rem; height: 1.6rem; }
+    .empty-state h3 { font-family: 'Outfit', sans-serif; color: var(--text); margin: 0; font-size: 1.25rem; }
+    .empty-state p { margin: 0; max-width: 26rem; font-size: 0.95rem; }
+    .empty-state .btn { margin-top: 0.4rem; }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+        background: var(--surface); color: var(--text); border: 2px solid var(--border);
+        padding: 0.75rem 1.4rem; font-size: 1rem; font-weight: 600; border-radius: 10px; cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+    .btn:hover, .btn:focus-visible {
+        border-color: var(--accent); background: var(--surface-hover); outline: none;
+        box-shadow: 0 0 0 4px var(--accent-soft); transform: translateY(-1px);
+    }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+    .btn.primary:hover, .btn.primary:focus-visible { background: #ffc670; box-shadow: 0 0 0 4px var(--accent-soft); }
+
+    /* ---------- Bottom control hint bar ---------- */
+    .hint-bar {
+        position: fixed; left: var(--rail-w); right: 0; bottom: 0; z-index: 55;
+        display: flex; gap: 1.8rem; align-items: center;
+        padding: 0.9rem var(--safe-x);
+        background: linear-gradient(0deg, rgba(10,11,15,0.97) 60%, rgba(10,11,15,0));
+        backdrop-filter: blur(6px);
+        font-size: 0.88rem; color: var(--text-dim);
+    }
+    .hint-bar .hint { display: flex; align-items: center; gap: 0.5rem; }
+    .hint-bar svg { width: 1.05rem; height: 1.05rem; }
+    .hint-bar kbd {
+        font-family: inherit; font-size: 0.78rem; font-weight: 700; color: var(--bg);
+        background: var(--accent); padding: 0.15rem 0.5rem; border-radius: 6px;
+    }
+
+    /* ---------- Settings modal ---------- */
+    #settings-modal {
+        display: none; position: fixed; inset: 0; background: rgba(6, 7, 10, 0.88);
+        backdrop-filter: blur(4px); z-index: 100; padding: var(--safe-y) var(--safe-x); overflow-y: auto;
+    }
+    .settings-content {
+        max-width: 46rem; margin: 2vh auto; background: var(--bg-elevated); border: 1px solid var(--border);
+        padding: 2.2rem; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .settings-header { margin-bottom: 1.6rem; }
+    .settings-header h2 { padding: 0; margin-bottom: 0.35rem; }
+    .settings-header p { margin: 0; color: var(--text-dim); font-size: 0.92rem; }
+
+    .field-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-dim); margin-bottom: 0.5rem; }
+    .import-container { display: flex; gap: 0.7rem; }
+
+    input[type="text"] {
+        flex-grow: 1; background: var(--surface); color: var(--text); border: 2px solid var(--border);
+        padding: 0.9rem 1rem; font-size: 1rem; border-radius: 10px; font-family: inherit;
+    }
+
+    textarea {
+        width: 100%; background: var(--surface); color: var(--text); border: 2px solid var(--border);
+        margin-top: 1.6rem; padding: 1rem; font-size: 0.95rem; border-radius: 10px;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+        height: 16rem; resize: vertical; white-space: pre; overflow-wrap: normal; overflow-x: auto; line-height: 1.5;
+    }
+    input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+
+    ::placeholder { color: var(--text-faint); font-family: 'Inter', sans-serif; font-size: 0.95rem; }
+
+    #import-msg { margin-top: 0.6rem; font-size: 0.9rem; min-height: 1.2em; display: flex; align-items: center; gap: 0.45rem; }
+    #import-msg.ok { color: var(--ok); }
+    #import-msg.err { color: var(--danger); }
+
+    .settings-actions { margin-top: 1.8rem; display: flex; gap: 0.9rem; }
+
+    /* ---------- Embedded player ---------- */
+    #player-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 200; flex-direction: column; }
+    .player-top {
+        display: flex; align-items: center; gap: 1rem; padding: var(--safe-y) var(--safe-x) 1rem;
+        background: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0));
+        position: absolute; top: 0; left: 0; right: 0; z-index: 2;
+    }
+    .player-title { font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1.1rem; }
+    .player-stage { flex: 1; display: flex; align-items: center; justify-content: center; }
+    .player-stage video, .player-stage iframe { width: 100%; height: 100%; border: 0; background: #000; }
+    .player-stage .player-error { color: var(--text-dim); text-align: center; max-width: 26rem; padding: 1rem; font-size: 0.95rem; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) {
+        * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    }
+
+    /* ---------- Touch devices: hint bar is meaningless without a keyboard/remote ---------- */
+    @media (pointer: coarse) {
+        .hint-bar { display: none; }
+    }
+
+    /* ---------- Small screens: rail becomes a bottom tab bar (thumb reach) ---------- */
+    @media (max-width: 720px) {
+        :root { --rail-w: 0px; }
+        body { padding-left: 0; padding-bottom: 4.6rem; }
+        .rail {
+            top: auto; bottom: 0; left: 0; right: 0; height: 4.4rem; width: auto;
+            flex-direction: row; align-items: center; justify-content: center; gap: 2.2rem;
+            border-right: none; border-top: 1px solid var(--border); padding: 0 1rem;
+        }
+        .rail-mark, .rail-spacer { display: none; }
+        .hint-bar { display: none; }
+        .item-card { width: 7.6rem; }
+        .search-bar { margin: var(--safe-y) var(--safe-x) 0; }
+    }
+</style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Portal</h1>
-        <button id="btn-open-settings" class="btn" tabindex="1">⚙️</button>
-    </div>
+<aside class="rail" aria-label="Navegação principal">
+    <span class="rail-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#0a0b0f"/></svg></span>
+    <button id="rail-search" class="rail-btn" aria-label="Buscar" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    </button>
+    <button id="rail-home" class="rail-btn" aria-label="Início">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 9v11a1 1 0 0 0 1 1h3v-7h6v7h3a1 1 0 0 0 1-1V9"/></svg>
+    </button>
+    <span class="rail-spacer"></span>
+    <button id="rail-settings" class="rail-btn" aria-label="Configurações">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+    </button>
+</aside>
 
+<div class="search-bar" id="search-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" id="input-search" placeholder="Buscar canal..." aria-label="Buscar canal">
+</div>
+
+<header class="pagehead">
+    <h1>Portal</h1>
+</header>
+
+<main>
     <div id="items-container"></div>
+</main>
 
-    <div id="settings-modal">
-        <div class="settings-content">
-            
-            <div class="import-container">
-                <!-- Adicionado o placeholder descritivo na barra de link -->
-                <input type="text" id="input-link" tabindex="2" placeholder="Importar configurações através de um link...">
-                <button id="btn-import" class="btn" tabindex="3">Importar</button>
-            </div>
-            <div id="import-msg"></div>
+<div class="hint-bar">
+    <span class="hint"><kbd>OK</kbd> Reproduzir</span>
+    <span class="hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/><path d="M5 19h14"/></svg>
+        Navegar
+    </span>
+    <span class="hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        Voltar
+    </span>
+</div>
 
-            <!-- Adicionado o placeholder descritivo na caixa de texto -->
-            <textarea id="input-config" tabindex="4" placeholder="Ou cole suas configurações aqui..."></textarea>
-            
-            <div class="settings-actions">
-                <button id="btn-save" class="btn" tabindex="5">Salvar</button>
-                <button id="btn-close" class="btn" tabindex="6">Cancelar</button>
-            </div>
+<div id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="settings-content">
+        <div class="settings-header">
+            <h2 id="settings-title">Configurações</h2>
+            <p>Importe sua lista de canais por link ou cole o conteúdo diretamente abaixo.</p>
+        </div>
+
+        <label class="field-label" for="input-link">Importar por link</label>
+        <div class="import-container">
+            <input type="text" id="input-link" placeholder="https://...">
+            <button id="btn-import" class="btn">Importar</button>
+        </div>
+        <div id="import-msg"></div>
+
+        <label class="field-label" for="input-config" style="margin-top:1.6rem;">Lista de canais</label>
+        <textarea id="input-config" placeholder="Ou cole sua lista de canais aqui..."></textarea>
+
+        <div class="settings-actions">
+            <button id="btn-save" class="btn primary">Salvar</button>
+            <button id="btn-close" class="btn">Cancelar</button>
         </div>
     </div>
+</div>
 
-    <script>
-        const itemsContainer = document.getElementById('items-container');
-        const settingsModal = document.getElementById('settings-modal');
-        const inputConfig = document.getElementById('input-config');
-        const inputLink = document.getElementById('input-link');
-        const btnOpenSettings = document.getElementById('btn-open-settings');
-        const btnImport = document.getElementById('btn-import');
-        const importMsg = document.getElementById('import-msg');
+<div id="player-overlay">
+    <div class="player-top">
+        <button id="btn-player-back" class="rail-btn" style="background:var(--surface);" aria-label="Voltar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        </button>
+        <span class="player-title" id="player-title"></span>
+    </div>
+    <div class="player-stage" id="player-stage"></div>
+</div>
 
-        function loadConfig() {
-            return localStorage.getItem('portal_configText') || '';
-        }
+<script>
+    const itemsContainer = document.getElementById('items-container');
+    const settingsModal = document.getElementById('settings-modal');
+    const inputConfig = document.getElementById('input-config');
+    const inputLink = document.getElementById('input-link');
+    const inputSearch = document.getElementById('input-search');
+    const searchBar = document.getElementById('search-bar');
+    const railSearch = document.getElementById('rail-search');
+    const railHome = document.getElementById('rail-home');
+    const railSettings = document.getElementById('rail-settings');
+    const btnImport = document.getElementById('btn-import');
+    const importMsg = document.getElementById('import-msg');
 
-        function renderItems() {
-            const configText = loadConfig();
-            itemsContainer.innerHTML = '';
-            
-            if (!configText || configText.trim() === '') return;
+    const playerOverlay = document.getElementById('player-overlay');
+    const playerStage = document.getElementById('player-stage');
+    const playerTitle = document.getElementById('player-title');
+    const btnPlayerBack = document.getElementById('btn-player-back');
 
-            const lines = configText.split('\n').filter(line => line.trim() !== '');
-            if (lines.length < 2) return;
+    let currentHls = null;
+    let lastFocusedCard = null;
 
-            const templateLine = lines[0].split(';')[0].split('\t')[0]; 
-            const template = templateLine.replace(/"/g, '').trim();
+    const ICON_EMPTY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10a2 2 0 0 1 2-2h2l2-3h4l2 3h2a2 2 0 0 1 2 2v10"/><path d="M2 20h20"/><circle cx="12" cy="13" r="2.5"/></svg>';
 
-            const categories = {};
+    function loadConfig() {
+        return localStorage.getItem('portal_configText') || '';
+    }
 
-            for (let i = 1; i < lines.length; i++) {
-                let currentLine = lines[i];
-                let parts = [];
+    function parseConfig(configText) {
+        const categories = {};
+        if (!configText || configText.trim() === '') return { template: '', categories };
 
-                if (currentLine.includes('\t')) {
-                    parts = currentLine.split('\t');
-                } else if (currentLine.includes(';')) {
-                    parts = currentLine.split(';');
-                } else if (currentLine.includes(',')) {
-                    parts = currentLine.split(',');
-                }
+        const lines = configText.split('\n').filter(line => line.trim() !== '');
+        if (lines.length < 2) return { template: '', categories };
 
-                if (parts.length >= 3) {
-                    const category = parts[0].replace(/"/g, '').trim();
-                    const name = parts[1].replace(/"/g, '').trim();
-                    const id = parts[2].replace(/"/g, '').trim();
+        const templateLine = lines[0].split(';')[0].split('\t')[0];
+        const template = templateLine.replace(/"/g, '').trim();
 
-                    if (category && name && id) {
-                        if (!categories[category]) categories[category] = [];
-                        categories[category].push({ name, id });
-                    }
-                }
+        for (let i = 1; i < lines.length; i++) {
+            let currentLine = lines[i];
+            let parts = [];
+
+            if (currentLine.includes('\t')) {
+                parts = currentLine.split('\t');
+            } else if (currentLine.includes(';')) {
+                parts = currentLine.split(';');
+            } else if (currentLine.includes(',')) {
+                parts = currentLine.split(',');
             }
 
-            let html = '';
-            for (const category in categories) {
-                html += `<div class="category-container"><h2>${category}</h2><div class="grid">`;
-                categories[category].forEach(item => {
-                    
-                    let link = template;
-                    if(link.includes('[CANAL]')) {
-                        link = link.split('[CANAL]').join(item.id);
-                    } else if (link.includes('[ID]')) {
-                        link = link.split('[ID]').join(item.id);
-                    }
+            if (parts.length >= 3) {
+                const category = parts[0].replace(/"/g, '').trim();
+                const name = parts[1].replace(/"/g, '').trim();
+                const id = parts[2].replace(/"/g, '').trim();
 
-                    html += `<a href="${link}" class="item-card">${item.name}</a>`;
+                if (category && name && id) {
+                    if (!categories[category]) categories[category] = [];
+                    categories[category].push({ name, id });
+                }
+            }
+        }
+        return { template, categories };
+    }
+
+    function initials(name) {
+        const words = name.trim().split(/\s+/).filter(Boolean);
+        if (words.length === 0) return '?';
+        if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+        return (words[0][0] + words[1][0]).toUpperCase();
+    }
+
+    function hueFor(name) {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) % 360;
+        return hash;
+    }
+
+    function renderEmptyState() {
+        itemsContainer.innerHTML = `
+            <div class="empty-state">
+                <span class="icon">${ICON_EMPTY}</span>
+                <h3>Nenhum canal configurado</h3>
+                <p>Abra as configurações e importe sua lista de canais por link ou colando o conteúdo.</p>
+                <button class="btn primary" id="btn-empty-settings">Abrir configurações</button>
+            </div>`;
+        document.getElementById('btn-empty-settings').addEventListener('click', openModal);
+    }
+
+    function renderItems() {
+        const configText = loadConfig();
+        const { template, categories } = parseConfig(configText);
+
+        if (Object.keys(categories).length === 0) {
+            renderEmptyState();
+            return;
+        }
+
+        let html = '';
+        let rowIndex = 0;
+        for (const category in categories) {
+            html += `<div class="category-container" data-row="${rowIndex}"><h2>${category}</h2><div class="row-track">`;
+            categories[category].forEach((item, colIndex) => {
+                let link = template;
+                if (link.includes('[CANAL]')) {
+                    link = link.split('[CANAL]').join(item.id);
+                } else if (link.includes('[ID]')) {
+                    link = link.split('[ID]').join(item.id);
+                }
+                const hue = hueFor(item.name);
+                html += `<button type="button" class="item-card" data-row="${rowIndex}" data-col="${colIndex}"
+                            data-name="${item.name.toLowerCase()}" data-url="${link.replace(/"/g, '&quot;')}" data-title="${item.name.replace(/"/g, '&quot;')}">
+                            <span class="tile" style="background:hsl(${hue} 62% 42%)">${initials(item.name)}</span>
+                            <span class="label">${item.name}</span>
+                         </button>`;
+            });
+            html += `</div></div>`;
+            rowIndex++;
+        }
+
+        itemsContainer.innerHTML = html;
+
+        document.querySelectorAll('.item-card').forEach(card => {
+            card.addEventListener('click', () => openPlayer(card.dataset.url, card.dataset.title));
+        });
+
+        setTimeout(() => {
+            const firstCard = document.querySelector('.item-card');
+            if (firstCard) firstCard.focus();
+        }, 100);
+    }
+
+    function applySearch() {
+        const query = inputSearch.value.trim().toLowerCase();
+        document.querySelectorAll('.category-container').forEach(container => {
+            let anyVisible = false;
+            container.querySelectorAll('.item-card').forEach(card => {
+                const match = !query || card.dataset.name.includes(query);
+                card.classList.toggle('hidden', !match);
+                if (match) anyVisible = true;
+            });
+            container.classList.toggle('hidden', !anyVisible);
+        });
+    }
+    inputSearch.addEventListener('input', applySearch);
+
+    document.addEventListener('focusin', (e) => {
+        if (e.target.classList && e.target.classList.contains('item-card')) lastFocusedCard = e.target;
+    });
+
+    /* ---------- Mouse-friendly row scrolling (wheel + click-drag) ---------- */
+    itemsContainer.addEventListener('wheel', (e) => {
+        const track = e.target.closest('.row-track');
+        if (!track) return;
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+            e.preventDefault();
+            track.scrollLeft += e.deltaY;
+        }
+    }, { passive: false });
+
+    let dragTrack = null, dragStartX = 0, dragStartScroll = 0, dragMoved = false;
+
+    itemsContainer.addEventListener('mousedown', (e) => {
+        const track = e.target.closest('.row-track');
+        if (!track) return;
+        dragTrack = track;
+        dragStartX = e.pageX;
+        dragStartScroll = track.scrollLeft;
+        dragMoved = false;
+        track.classList.add('dragging');
+    });
+    window.addEventListener('mousemove', (e) => {
+        if (!dragTrack) return;
+        const dx = e.pageX - dragStartX;
+        if (Math.abs(dx) > 4) dragMoved = true;
+        dragTrack.scrollLeft = dragStartScroll - dx;
+    });
+    window.addEventListener('mouseup', () => {
+        if (dragTrack) dragTrack.classList.remove('dragging');
+        dragTrack = null;
+    });
+    // Suppress the click that would otherwise fire (and open the player) right after a drag.
+    itemsContainer.addEventListener('click', (e) => {
+        if (dragMoved) {
+            e.preventDefault();
+            e.stopPropagation();
+            dragMoved = false;
+        }
+    }, true);
+
+    /* ---------- Search bar toggle ---------- */
+    function openSearch() {
+        searchBar.classList.add('open');
+        railSearch.setAttribute('aria-pressed', 'true');
+        inputSearch.focus();
+    }
+    function closeSearch() {
+        searchBar.classList.remove('open');
+        railSearch.setAttribute('aria-pressed', 'false');
+        inputSearch.value = '';
+        applySearch();
+    }
+    railSearch.addEventListener('click', () => {
+        if (searchBar.classList.contains('open')) closeSearch();
+        else openSearch();
+    });
+
+    railHome.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const firstCard = document.querySelector('.item-card:not(.hidden)');
+        if (firstCard) firstCard.focus();
+    });
+
+    /* ---------- Embedded player ---------- */
+    function loadHlsScript(cb) {
+        if (window.Hls) { cb(); return; }
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.15/hls.min.js';
+        s.onload = cb;
+        s.onerror = () => cb();
+        document.head.appendChild(s);
+    }
+
+    function openPlayer(url, name) {
+        if (!url) return;
+        lastFocusedCard = document.activeElement;
+        playerTitle.textContent = name || '';
+        playerStage.innerHTML = '';
+
+        const isHls = /\.m3u8(\?|$)/i.test(url);
+        const isDirectVideo = /\.(mp4|webm|ogg|mov|mkv)(\?|$)/i.test(url);
+
+        if (isHls) {
+            const video = document.createElement('video');
+            video.controls = true; video.autoplay = true; video.playsInline = true;
+            playerStage.appendChild(video);
+            if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+            } else {
+                loadHlsScript(() => {
+                    if (window.Hls && window.Hls.isSupported()) {
+                        currentHls = new window.Hls();
+                        currentHls.loadSource(url);
+                        currentHls.attachMedia(video);
+                    } else {
+                        video.src = url;
+                    }
                 });
-                html += `</div></div>`;
             }
-
-            itemsContainer.innerHTML = html;
-
-            setTimeout(() => {
-                const firstCard = document.querySelector('.item-card');
-                if (firstCard) firstCard.focus();
-                else btnOpenSettings.focus();
-            }, 100);
+        } else if (isDirectVideo) {
+            const video = document.createElement('video');
+            video.controls = true; video.autoplay = true; video.playsInline = true; video.src = url;
+            playerStage.appendChild(video);
+        } else {
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+            iframe.allowFullscreen = true;
+            playerStage.appendChild(iframe);
         }
 
-        btnImport.addEventListener('click', async () => {
-            const url = inputLink.value.trim();
-            if (!url) {
-                importMsg.style.color = '#ff5252';
-                importMsg.textContent = 'Por favor, insira um link válido.';
-                return;
+        playerOverlay.style.display = 'flex';
+        btnPlayerBack.focus();
+    }
+
+    function closePlayer() {
+        if (currentHls) { currentHls.destroy(); currentHls = null; }
+        playerStage.innerHTML = '';
+        playerOverlay.style.display = 'none';
+        if (lastFocusedCard) lastFocusedCard.focus();
+    }
+    btnPlayerBack.addEventListener('click', closePlayer);
+
+    /* ---------- Row / rail aware keyboard navigation ---------- */
+    function cardsInRow(rowEl) {
+        return Array.from(rowEl.querySelectorAll('.item-card:not(.hidden)'));
+    }
+    function visibleRows() {
+        return Array.from(document.querySelectorAll('.category-container:not(.hidden)'));
+    }
+
+    function moveCol(current, dir) {
+        const rowEl = current.closest('.category-container');
+        const cards = cardsInRow(rowEl);
+        const idx = cards.indexOf(current);
+        const targetIdx = idx + dir;
+        if (targetIdx < 0) { railHome.focus(); return; }
+        if (targetIdx >= cards.length) return;
+        cards[targetIdx].focus();
+        cards[targetIdx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+
+    function moveRow(current, dir) {
+        const rows = visibleRows();
+        const rowEl = current.closest('.category-container');
+        const idx = rows.indexOf(rowEl);
+        const targetIdx = idx + dir;
+        if (targetIdx < 0 || targetIdx >= rows.length) return;
+        const targetCards = cardsInRow(rows[targetIdx]);
+        if (!targetCards.length) return;
+        const curRect = current.getBoundingClientRect();
+        let best = targetCards[0], bestDist = Infinity;
+        targetCards.forEach(c => {
+            const r = c.getBoundingClientRect();
+            const d = Math.abs((r.left + r.width / 2) - (curRect.left + curRect.width / 2));
+            if (d < bestDist) { bestDist = d; best = c; }
+        });
+        best.focus();
+        best.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (playerOverlay.style.display === 'flex') {
+            if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); closePlayer(); }
+            return;
+        }
+
+        if (settingsModal.style.display === 'block') {
+            const tag = document.activeElement ? document.activeElement.tagName : '';
+            if ((e.key === 'Escape' || e.key === 'Backspace') && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+                e.preventDefault();
+                closeModal();
             }
+            return;
+        }
 
-            importMsg.style.color = 'var(--focus-color)';
-            importMsg.textContent = 'Aguarde...';
+        const active = document.activeElement;
+        if (!active) return;
 
+        if (active.id === 'input-search') {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const firstCard = document.querySelector('.item-card:not(.hidden)');
+                if (firstCard) firstCard.focus();
+            } else if (e.key === 'Escape' || (e.key === 'Backspace' && active.value === '')) {
+                closeSearch();
+            }
+            return;
+        }
+
+        if (active.classList.contains('rail-btn')) {
+            const railBtns = Array.from(document.querySelectorAll('.rail-btn'));
+            const idx = railBtns.indexOf(active);
+            if (e.key === 'ArrowDown') { e.preventDefault(); if (railBtns[idx + 1]) railBtns[idx + 1].focus(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); if (railBtns[idx - 1]) railBtns[idx - 1].focus(); }
+            else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                const target = (lastFocusedCard && document.body.contains(lastFocusedCard) && !lastFocusedCard.classList.contains('hidden'))
+                    ? lastFocusedCard
+                    : (document.querySelector('.item-card:not(.hidden)') || document.getElementById('btn-empty-settings'));
+                if (target) target.focus();
+            }
+            return;
+        }
+
+        if (active.classList.contains('item-card')) {
+            if (e.key === 'ArrowLeft') { e.preventDefault(); moveCol(active, -1); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); moveCol(active, 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); moveRow(active, -1); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); moveRow(active, 1); }
+            else if (e.key === 'Home') {
+                e.preventDefault();
+                const cards = cardsInRow(active.closest('.category-container'));
+                if (cards[0]) { cards[0].focus(); cards[0].scrollIntoView({ behavior: 'smooth', inline: 'center' }); }
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                const cards = cardsInRow(active.closest('.category-container'));
+                const last = cards[cards.length - 1];
+                if (last) { last.focus(); last.scrollIntoView({ behavior: 'smooth', inline: 'center' }); }
+            }
+            return;
+        }
+    });
+
+    /* ---------- Import / settings ---------- */
+    function setImportMsg(text, type) {
+        importMsg.className = type || '';
+        importMsg.textContent = text;
+    }
+
+    btnImport.addEventListener('click', async () => {
+        const url = inputLink.value.trim();
+        if (!url) { setImportMsg('Insira um link válido.', 'err'); return; }
+        setImportMsg('Importando...', '');
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('CORS Bloqueado');
+            const text = await response.text();
+            inputConfig.value = text;
+            setImportMsg('Lista importada com sucesso.', 'ok');
+        } catch (error) {
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('CORS Bloqueado');
-                const text = await response.text();
+                const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+                const responseProxy = await fetch(proxyUrl);
+                if (!responseProxy.ok) throw new Error('Proxy Falhou');
+                const text = await responseProxy.text();
                 inputConfig.value = text;
-                importMsg.textContent = 'Sucesso!';
-            } catch (error) {
-                try {
-                    const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
-                    const responseProxy = await fetch(proxyUrl);
-                    if (!responseProxy.ok) throw new Error('Proxy Falhou');
-                    const text = await responseProxy.text();
-                    inputConfig.value = text;
-                    importMsg.textContent = 'Sucesso!';
-                } catch (errProxy) {
-                    importMsg.style.color = '#ff5252';
-                    importMsg.textContent = 'Falha ao importar.';
-                }
+                setImportMsg('Lista importada com sucesso.', 'ok');
+            } catch (errProxy) {
+                setImportMsg('Não foi possível importar esse link.', 'err');
             }
-        });
+        }
+    });
 
-        btnOpenSettings.addEventListener('click', () => {
-            inputConfig.value = loadConfig();
-            importMsg.textContent = '';
-            inputLink.value = '';
-            settingsModal.style.display = 'block';
-            inputLink.focus();
-        });
+    function openModal() {
+        inputConfig.value = loadConfig();
+        setImportMsg('', '');
+        inputLink.value = '';
+        settingsModal.style.display = 'block';
+        inputLink.focus();
+    }
+    function closeModal() {
+        settingsModal.style.display = 'none';
+        railSettings.focus();
+    }
+    railSettings.addEventListener('click', openModal);
+    document.getElementById('btn-close').addEventListener('click', closeModal);
 
-        document.getElementById('btn-close').addEventListener('click', () => {
-            settingsModal.style.display = 'none';
-            btnOpenSettings.focus();
-        });
+    document.getElementById('btn-save').addEventListener('click', () => {
+        localStorage.setItem('portal_configText', inputConfig.value);
+        settingsModal.style.display = 'none';
+        closeSearch();
+        renderItems();
+    });
 
-        document.getElementById('btn-save').addEventListener('click', () => {
-            localStorage.setItem('portal_configText', inputConfig.value);
-            settingsModal.style.display = 'none';
-            renderItems(); 
-        });
-
-        window.onload = () => {
-            renderItems();
-        };
-    </script>
+    window.onload = () => { renderItems(); };
+</script>
 </body>
 </html>
