@@ -1,834 +1,428 @@
-
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Portal Smart TV</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-    :root {
-        --bg: #07080a;
-        --rail-bg: #0f1015;
-        --bg-elevated: #161922;
-        --surface: #1e222f;
-        --surface-hover: #272c3d;
-        --border: #353c52;
-        --text: #ffffff;
-        --text-dim: #c5c8d4;
-        --text-faint: #81889c;
-        --accent: #ffd166;
-        --accent-soft: rgba(255, 209, 102, 0.25);
-        --danger: #ff6b6b;
-        --ok: #6bd68f;
-        --rail-w: 5.5rem;
-        --safe-x: clamp(24px, 3.5vw, 50px);
-        --safe-y: clamp(20px, 3vh, 40px);
-    }
+:root{
+  --bg:#edf2f6;
+  --surface:#ffffff;
+  --surface-2:#f6f8fa;
+  --text:#15202b;
+  --muted:#66717d;
+  --line:#d5dee7;
+  --primary:#1267b1;
+  --primary-strong:#0d518c;
+  --primary-soft:#dcecf9;
+  --success:#2f806a;
+  --warning:#a66a22;
+  --danger:#b44242;
+  --focus:#0a65c7;
+  --rail-w:clamp(112px,8.2vw,164px);
+  --page-x:clamp(22px,3vw,64px);
+  --page-y:clamp(18px,2.4vh,42px);
+  --radius:clamp(18px,1.35vw,28px);
+  --shadow:0 10px 26px rgba(35,55,75,.10);
+}
+*{box-sizing:border-box}
+html{font-size:clamp(17px,.94vw,26px);background:var(--bg)}
+body{
+  margin:0;min-height:100vh;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:linear-gradient(180deg,#f7f9fb 0%,var(--bg) 100%);
+  overflow-x:hidden;
+}
+button,input,textarea{font:inherit}
+button,a,input,textarea{outline:none}
+a{text-decoration:none;color:inherit}
 
-    * { box-sizing: border-box; }
-    html { font-size: 22px; } 
+.app-shell{min-height:100vh;padding-left:var(--rail-w)}
 
-    body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: 'Inter', sans-serif;
-        margin: 0;
-        height: 100vh;
-        padding-left: var(--rail-w);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
+/* Navegação principal */
+.rail{
+  position:fixed;left:0;top:0;bottom:0;width:var(--rail-w);z-index:50;
+  display:flex;flex-direction:column;gap:12px;
+  padding:var(--page-y) 12px 20px;
+  background:rgba(255,255,255,.97);
+  border-right:1px solid var(--line);
+  box-shadow:8px 0 28px rgba(42,60,78,.06);
+}
+.brand-mark{
+  width:clamp(56px,3.8vw,74px);height:clamp(56px,3.8vw,74px);
+  margin:0 auto clamp(12px,1.5vh,22px);border-radius:22%;
+  display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--primary),var(--primary-strong));
+  box-shadow:0 10px 22px rgba(18,103,177,.18);
+}
+.brand-mark svg{width:42%;height:42%}
+.rail-btn{
+  width:100%;min-height:clamp(68px,7.4vh,92px);
+  border:2px solid transparent;border-radius:20px;
+  background:transparent;color:#344352;
+  display:flex;align-items:center;gap:12px;
+  padding:0 14px;cursor:pointer;text-align:left;
+  font-weight:850;font-size:clamp(.94rem,.9vw,1.08rem);
+  transition:background .12s,border-color .12s,color .12s,box-shadow .12s;
+}
+.rail-btn svg{width:clamp(28px,1.8vw,38px);height:clamp(28px,1.8vw,38px);flex:0 0 auto}
+.rail-btn.active{background:var(--primary-soft);color:var(--primary-strong);border-color:#b9d7ef}
+.rail-btn:hover,.rail-btn:focus-visible{
+  background:var(--primary);color:#fff;border-color:var(--primary-strong);
+  box-shadow:0 0 0 5px rgba(10,101,199,.18);
+}
+.rail-spacer{flex:1}
 
-    button { font-family: inherit; }
+/* Área das telas */
+.page{padding:var(--page-y) var(--page-x) clamp(42px,5vh,80px)}
+.view{display:none;max-width:2100px;margin:0 auto}
+.view.active{display:block}
 
-    /* ---------- Barra Lateral (Rail) ---------- */
-    .rail {
-        position: fixed;
-        top: 0; left: 0; bottom: 0;
-        width: var(--rail-w);
-        background: var(--rail-bg);
-        border-right: 2px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-        padding: var(--safe-y) 0;
-        z-index: 60;
-    }
-    .rail-mark {
-        width: 2.8rem; height: 2.8rem; border-radius: 10px; background: var(--accent);
-        display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; flex: none;
-    }
-    .rail-mark svg { width: 1.5rem; height: 1.5rem; }
+/* Hero */
+.hero{
+  height:clamp(220px,31vh,360px);border-radius:calc(var(--radius) + 4px);
+  position:relative;overflow:hidden;background:#8ab5cf;
+  box-shadow:var(--shadow);margin-bottom:clamp(26px,3.2vh,44px)
+}
+.hero-scenes,.hero-scene{position:absolute;inset:0}.hero-scene{opacity:0;transition:opacity 1.2s ease}.hero-scene.active{opacity:1}.hero-scene svg{width:100%;height:100%;display:block}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(13,35,54,.72) 0%,rgba(13,35,54,.48) 42%,rgba(13,35,54,.12) 76%,rgba(13,35,54,0) 100%)}
+.hero-copy{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(28px,3vw,56px);max-width:65%;color:#fff}
+.hero-copy h1{margin:0 0 8px;font-size:clamp(2rem,2.8vw,3.7rem);line-height:1.04;letter-spacing:-.035em;font-weight:900}
+.hero-copy p{margin:0;font-size:clamp(1rem,1vw,1.2rem);line-height:1.45;font-weight:650;max-width:680px}
+.hero-clock{
+  position:absolute;right:clamp(18px,2vw,34px);top:clamp(16px,2vh,28px);z-index:3;
+  padding:10px 16px;border-radius:14px;background:rgba(255,255,255,.9);
+  color:#17344d;font-weight:900;font-size:clamp(1rem,1vw,1.15rem);box-shadow:0 6px 18px rgba(28,48,68,.12)
+}
 
-    .rail-btn {
-        width: 3.6rem; height: 3.6rem;
-        background: transparent; color: var(--text-dim);
-        border: 3px solid transparent; border-radius: 12px;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .rail-btn svg { width: 1.7rem; height: 1.7rem; }
-    .rail-btn:hover, .rail-btn:focus-visible {
-        color: var(--bg); border-color: var(--accent); background: var(--accent);
-        box-shadow: 0 0 0 5px var(--accent-soft); outline: none; transform: scale(1.05);
-    }
-    .rail-btn[aria-pressed="true"] { color: var(--bg); background: var(--accent); border-color: var(--accent); }
-    .rail-spacer { flex: 1; }
+/* Seções */
+.section{margin-top:clamp(26px,3vh,44px)}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:clamp(14px,1.8vh,24px)}
+.section-title{margin:0;font-size:clamp(1.35rem,1.45vw,1.85rem);letter-spacing:-.02em;font-weight:900}
+.section-count{color:var(--muted);font-weight:750;font-size:clamp(.92rem,.9vw,1.05rem)}
 
-    /* ---------- Barra de Busca ---------- */
-    .search-bar {
-        display: none;
-        align-items: center;
-        gap: 1rem;
-        margin: var(--safe-y) var(--safe-x) 0;
-        background: var(--surface);
-        border: 3px solid var(--border);
-        border-radius: 14px;
-        padding: 0.4rem 1.2rem;
-        flex-shrink: 0;
-    }
-    .search-bar.open { display: flex; }
-    .search-bar svg { width: 1.4rem; height: 1.4rem; color: var(--text-faint); flex: none; }
-    .search-bar input {
-        flex: 1; background: transparent; border: none; color: var(--text);
-        font-size: 1.15rem; padding: 0.8rem 0; font-family: inherit; font-weight: 600;
-    }
-    .search-bar input:focus { outline: none; }
-    .search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
+.category-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:clamp(16px,1.3vw,26px)
+}
+.category-card{
+  min-height:clamp(120px,14vh,170px);border:3px solid transparent;border-radius:var(--radius);
+  color:#fff;text-align:left;padding:clamp(20px,1.7vw,32px);
+  display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer;
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+  transition:border-color .12s,box-shadow .12s,filter .12s;
+}
+.category-card::after{content:"";position:absolute;right:-36px;top:-50px;width:130px;height:130px;border:22px solid rgba(255,255,255,.12);border-radius:50%}
+.category-card:nth-child(6n+1){background:linear-gradient(135deg,#19766a,#11594f)}
+.category-card:nth-child(6n+2){background:linear-gradient(135deg,#246eae,#184e81)}
+.category-card:nth-child(6n+3){background:linear-gradient(135deg,#596f86,#3d5064)}
+.category-card:nth-child(6n+4){background:linear-gradient(135deg,#2e819a,#1d6174)}
+.category-card:nth-child(6n+5){background:linear-gradient(135deg,#728832,#52631f)}
+.category-card:nth-child(6n+6){background:linear-gradient(135deg,#a96d2c,#7c4c1d)}
+.category-card:hover,.category-card:focus-visible{
+  border-color:#fff;box-shadow:0 0 0 6px var(--focus),0 14px 32px rgba(34,52,70,.18);filter:brightness(1.05)
+}
+.category-name{font-size:clamp(1.15rem,1.15vw,1.45rem);font-weight:900;line-height:1.18;position:relative;z-index:1}
+.category-meta{margin-top:8px;font-size:clamp(.9rem,.88vw,1.04rem);font-weight:750;color:rgba(255,255,255,.92);position:relative;z-index:1}
 
-    /* ---------- Cabeçalho da Tela ---------- */
-    .view-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: var(--safe-y) var(--safe-x) 1rem;
-        flex-shrink: 0;
-    }
-    .view-title-wrap {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-    }
-    h1 { 
-        font-family: 'Outfit', sans-serif; 
-        font-weight: 800; 
-        font-size: 2rem; 
-        margin: 0; 
-        letter-spacing: 0.02em; 
-        color: #fff;
-    }
-    
-    .back-btn {
-        display: none;
-        background: var(--surface);
-        color: var(--text);
-        border: 3px solid var(--border);
-        padding: 0.6rem 1.2rem;
-        border-radius: 12px;
-        font-size: 1rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .back-btn:hover, .back-btn:focus-visible {
-        border-color: var(--accent);
-        background: var(--accent);
-        color: var(--bg);
-        outline: none;
-        box-shadow: 0 0 0 5px var(--accent-soft);
-    }
+.channel-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:clamp(16px,1.3vw,26px)
+}
+.channel-card{
+  min-height:clamp(118px,13vh,160px);border:2px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);display:flex;align-items:center;gap:clamp(15px,1.2vw,22px);
+  padding:clamp(18px,1.4vw,26px);box-shadow:0 7px 20px rgba(42,59,76,.08);
+  transition:border-color .12s,box-shadow .12s,background .12s;
+}
+.channel-card:hover,.channel-card:focus-visible{
+  border-color:var(--focus);background:#fbfdff;
+  box-shadow:0 0 0 5px rgba(10,101,199,.18),0 12px 26px rgba(42,59,76,.14)
+}
+.channel-logo{
+  width:clamp(64px,4.4vw,92px);height:clamp(64px,4.4vw,92px);border-radius:25%;
+  flex:0 0 auto;display:grid;place-items:center;background:var(--tile);color:#fff;
+  font-weight:900;font-size:clamp(1rem,1vw,1.28rem);letter-spacing:-.02em
+}
+.channel-info{min-width:0}.channel-name{font-size:clamp(1rem,1.02vw,1.28rem);font-weight:900;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.channel-cat{margin-top:7px;color:var(--muted);font-size:clamp(.86rem,.84vw,1rem);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    /* ---------- Layout Principal (Duas Colunas) ---------- */
-    .main-layout {
-        display: grid;
-        grid-template-columns: 460px 1fr;
-        gap: 30px;
-        flex-grow: 1;
-        padding: 0 var(--safe-x) var(--safe-y);
-        overflow: hidden;
-    }
+/* Cabeçalho padrão das telas internas */
+.screen-head{
+  display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:clamp(16px,1.4vw,26px);
+  margin:0 0 clamp(26px,3vh,42px);padding-bottom:clamp(16px,2vh,24px);border-bottom:1px solid var(--line)
+}
+.back-btn{
+  min-width:clamp(132px,9vw,182px);height:clamp(62px,6.5vh,82px);border:2px solid var(--line);border-radius:18px;
+  background:var(--surface);color:#263645;display:flex;align-items:center;justify-content:center;gap:9px;
+  cursor:pointer;font-weight:900;box-shadow:0 5px 14px rgba(44,61,78,.07);
+  transition:border-color .12s,background .12s,color .12s,box-shadow .12s
+}
+.back-btn svg{width:clamp(27px,1.6vw,36px);height:clamp(27px,1.6vw,36px)}
+.back-btn:hover,.back-btn:focus-visible{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 0 0 5px rgba(10,101,199,.18)}
+.screen-title h1{margin:0;font-size:clamp(1.7rem,1.8vw,2.35rem);letter-spacing:-.03em;font-weight:900}.screen-title p{margin:6px 0 0;color:var(--muted);font-size:clamp(.94rem,.9vw,1.08rem);font-weight:650}
 
-    .sidebar-panel {
-        background: var(--rail-bg);
-        border: 2px solid var(--border);
-        border-radius: 20px;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
+/* Busca: único campo de pesquisa da aplicação */
+.search-layout{max-width:1500px;margin:0 auto}
+.search-field{position:relative;margin-bottom:clamp(20px,2.4vh,34px)}
+.search-field svg{position:absolute;left:clamp(20px,1.4vw,28px);top:50%;transform:translateY(-50%);width:clamp(28px,1.7vw,36px);height:clamp(28px,1.7vw,36px);color:#697785;pointer-events:none}
+.search-field input{
+  width:100%;height:clamp(72px,7.3vh,96px);padding:0 clamp(22px,1.5vw,30px) 0 clamp(68px,4.4vw,90px);
+  border:3px solid var(--line);border-radius:20px;background:var(--surface);color:var(--text);
+  font-size:clamp(1.08rem,1.08vw,1.34rem);font-weight:800;box-shadow:0 7px 20px rgba(42,59,76,.07)
+}
+.search-field input:focus{border-color:var(--focus);box-shadow:0 0 0 6px rgba(10,101,199,.18),0 9px 24px rgba(42,59,76,.10)}
+.result-meta{margin:0 0 18px;color:var(--muted);font-weight:750}
 
-    /* Botão de Rolagem no Topo */
-    .scroll-btn-top {
-        background: var(--bg-elevated);
-        color: var(--text-dim);
-        border: none;
-        border-bottom: 2px solid var(--border);
-        width: 100%;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-    }
-    .scroll-btn-top svg, .scroll-btn-bottom svg {
-        width: 1.4rem;
-        height: 1.4rem;
-        fill: currentColor;
-    }
-    .scroll-btn-top:hover, .scroll-btn-top:focus-visible,
-    .scroll-btn-bottom:hover, .scroll-btn-bottom:focus-visible {
-        background: var(--accent);
-        color: var(--bg);
-        outline: none;
-    }
+/* Ajustes como tela, sem sobreposição */
+.settings-panel{max-width:1320px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(24px,2.2vw,40px);box-shadow:var(--shadow)}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2vw,34px)}
+.settings-block{min-width:0}.field-label{display:block;margin-bottom:10px;font-weight:900;color:#344352}
+.input-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px}
+.settings-panel input[type="text"],.settings-panel textarea{
+  width:100%;border:2px solid var(--line);border-radius:16px;background:var(--surface-2);color:var(--text);padding:16px 18px;font-weight:700
+}
+.settings-panel input[type="text"]:focus,.settings-panel textarea:focus{border-color:var(--focus);background:#fff;box-shadow:0 0 0 5px rgba(10,101,199,.16)}
+.settings-panel textarea{min-height:clamp(220px,31vh,360px);resize:vertical;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;line-height:1.5}
+.action-btn{
+  min-height:58px;border:2px solid var(--primary);border-radius:16px;padding:0 24px;
+  background:var(--primary);color:#fff;cursor:pointer;font-weight:900;
+  transition:background .12s,border-color .12s,box-shadow .12s
+}
+.action-btn.secondary{background:#fff;color:#2b3946;border-color:var(--line)}
+.action-btn:hover,.action-btn:focus-visible{background:var(--primary-strong);border-color:var(--primary-strong);box-shadow:0 0 0 5px rgba(10,101,199,.17)}
+.action-btn.secondary:hover,.action-btn.secondary:focus-visible{background:var(--primary-soft);color:var(--primary-strong);border-color:#b9d7ef}
+.switch-row{display:flex;align-items:center;gap:14px;margin-top:20px;padding:18px;border:2px solid var(--line);border-radius:16px;background:var(--surface-2);font-weight:800;cursor:pointer}.switch-row input{width:28px;height:28px;accent-color:var(--primary)}
+.settings-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:24px}
+#import-msg{min-height:24px;margin-top:10px;font-weight:800;font-size:.94rem}.ok{color:var(--success)}.err{color:var(--danger)}
 
-    .panel-scroll {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        scroll-behavior: smooth;
-    }
-    .panel-scroll::-webkit-scrollbar { width: 10px; }
-    .panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+.empty{
+  grid-column:1/-1;min-height:220px;border:2px dashed #c8d4df;border-radius:var(--radius);
+  background:rgba(255,255,255,.58);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:28px;color:var(--muted)
+}
+.empty strong{color:var(--text);font-size:1.25rem;margin-bottom:7px}
+.hidden{display:none!important}
 
-    /* Botão de Rolagem na Base */
-    .scroll-btn-bottom {
-        background: var(--bg-elevated);
-        color: var(--text-dim);
-        border: none;
-        border-top: 2px solid var(--border);
-        width: 100%;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-    }
-
-    .nav-card {
-        appearance: none;
-        background: var(--surface);
-        border: 3px solid var(--border);
-        padding: 20px 22px;
-        border-radius: 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        text-align: left;
-        width: 100%;
-        color: var(--text);
-        transition: all 0.2s ease;
-    }
-    .nav-card .label {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.2rem;
-        font-weight: 700;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        flex-grow: 1;
-        padding-right: 12px;
-    }
-    
-    .nav-card .badge {
-        font-size: 0.85rem;
-        background: var(--bg);
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-dim);
-        font-weight: 700;
-        border: 2px solid var(--border);
-        flex-shrink: 0;
-    }
-
-    .nav-card:hover, .nav-card:focus-visible {
-        border-color: var(--accent);
-        background: var(--accent);
-        color: var(--bg);
-        outline: none;
-        box-shadow: 0 0 0 6px var(--accent-soft), 0 10px 25px rgba(0,0,0,0.5);
-        transform: scale(1.02);
-    }
-    .nav-card:hover .badge, .nav-card:focus-visible .badge {
-        background: var(--bg);
-        color: var(--text);
-        border-color: var(--bg);
-    }
-
-    .category-section-title {
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: var(--accent);
-        margin: 14px 0 6px 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-    }
-
-    .hidden { display: none !important; }
-
-    /* ---------- Player de Vídeo ---------- */
-    .player-container {
-        background: #000;
-        border: 2px solid var(--border);
-        border-radius: 20px;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-    }
-
-    .player-topbar {
-        background: var(--bg-elevated);
-        padding: 18px 24px;
-        border-bottom: 2px solid var(--border);
-        font-family: 'Outfit', sans-serif;
-        font-weight: 700;
-        font-size: 1.2rem;
-        color: var(--accent);
-    }
-
-    .player-stage {
-        flex-grow: 1;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #000;
-    }
-
-    .player-stage video, .player-stage iframe {
-        width: 100%;
-        height: 100%;
-        border: 0;
-        background: #000;
-    }
-
-    .player-placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 2.5rem;
-        color: var(--text-dim);
-        gap: 1rem;
-    }
-    .player-placeholder h3 { color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; font-size: 1.5rem; }
-    .player-placeholder p { margin: 0; font-size: 1.1rem; max-width: 25rem; line-height: 1.4; }
-
-    /* ---------- Empty state ---------- */
-    .empty-state {
-        display: flex; flex-direction: column; align-items: center; text-align: center;
-        gap: 1.2rem; padding: 4rem 1rem; color: var(--text-dim); margin: auto;
-    }
-    .empty-state h3 { font-family: 'Outfit', sans-serif; color: var(--text); margin: 0; font-size: 1.3rem; }
-    .empty-state p { margin: 0; font-size: 1rem; }
-
-    /* ---------- Botões Gerais ---------- */
-    .btn {
-        background: var(--surface); color: var(--text); border: 3px solid var(--border);
-        padding: 0.9rem 1.6rem; font-size: 1.1rem; font-weight: 700; border-radius: 12px; cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .btn:hover, .btn:focus-visible {
-        border-color: var(--accent); background: var(--accent); color: var(--bg); outline: none;
-        box-shadow: 0 0 0 5px var(--accent-soft);
-    }
-    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 800; }
-
-    /* ---------- Modal de Configurações ---------- */
-    #settings-modal {
-        display: none; position: fixed; inset: 0; background: rgba(7, 8, 10, 0.92);
-        backdrop-filter: blur(6px); z-index: 100; padding: var(--safe-y) var(--safe-x); overflow-y: auto;
-    }
-    .settings-content {
-        max-width: 50rem; margin: 3vh auto; background: var(--bg-elevated); border: 2px solid var(--border);
-        padding: 2.8rem; border-radius: 22px; box-shadow: 0 25px 60px rgba(0,0,0,0.7);
-    }
-    .settings-header { margin-bottom: 2rem; }
-    .settings-header h2 { padding: 0; margin-bottom: 0.5rem; font-size: 1.8rem; }
-    .settings-header p { margin: 0; color: var(--text-dim); font-size: 1.1rem; }
-
-    .field-label { display: block; font-size: 1rem; font-weight: 700; color: var(--text-dim); margin-bottom: 0.6rem; }
-    .import-container { display: flex; gap: 0.8rem; }
-
-    input[type="text"] {
-        flex-grow: 1; background: var(--surface); color: var(--text); border: 3px solid var(--border);
-        padding: 1rem 1.2rem; font-size: 1.1rem; border-radius: 12px; font-family: inherit; font-weight: 600;
-    }
-
-    .checkbox-container {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-top: 1.8rem;
-        background: var(--surface);
-        padding: 1rem 1.2rem;
-        border-radius: 12px;
-        border: 2px solid var(--border);
-        cursor: pointer;
-    }
-    .checkbox-container input {
-        width: 1.5rem;
-        height: 1.5rem;
-        accent-color: var(--accent);
-        cursor: pointer;
-    }
-    .checkbox-container span {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--text);
-    }
-
-    textarea {
-        width: 100%; background: var(--surface); color: var(--text); border: 3px solid var(--border);
-        margin-top: 1.8rem; padding: 1.2rem; font-size: 1.05rem; border-radius: 12px;
-        font-family: monospace; height: 14rem; resize: vertical; line-height: 1.5;
-    }
-    input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
-    ::placeholder { color: var(--text-faint); font-size: 1.05rem; }
-
-    #import-msg { margin-top: 0.8rem; font-size: 1rem; min-height: 1.2em; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-    #import-msg.ok { color: var(--ok); }
-    #import-msg.err { color: var(--danger); }
-    .settings-actions { margin-top: 2rem; display: flex; gap: 1rem; }
+/* Responsividade para TVs e telas menores */
+@media(max-width:1500px){
+  .category-grid,.channel-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:1120px){
+  :root{--rail-w:96px;--page-x:24px}.rail-label{display:none}.rail-btn{justify-content:center;padding:0}.category-grid,.channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-copy{max-width:78%}.settings-grid{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  :root{--rail-w:78px;--page-x:16px}.rail{padding-left:8px;padding-right:8px}.brand-mark{width:52px;height:52px}.hero{height:280px}.hero-copy{max-width:90%;padding:26px}.hero-clock{display:none}.category-grid,.channel-grid{grid-template-columns:1fr}.screen-head{grid-template-columns:1fr}.back-btn{min-width:0;width:max-content;padding:0 16px}.input-row{grid-template-columns:1fr}.settings-actions{flex-direction:column-reverse}.settings-actions .action-btn{width:100%}.section-count{display:none}
+}
+@media(min-width:2400px){
+  :root{--rail-w:190px;--page-x:82px;--page-y:52px}.category-grid,.channel-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.hero{height:430px}
+}
+@media(max-height:760px) and (min-width:1000px){
+  .hero{height:210px}.hero-copy{padding:26px 34px}.category-card{min-height:112px}.channel-card{min-height:112px}.section{margin-top:24px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.hero-scene{transition:none!important}}
 </style>
 </head>
 <body>
-
-<aside class="rail" aria-label="Navegação principal">
-    <span class="rail-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7L8 5z" fill="#07080a"/></svg></span>
-    <button id="rail-search" class="rail-btn" aria-label="Buscar" aria-pressed="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+<div class="app-shell">
+  <aside class="rail" aria-label="Navegação principal">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M8 5.5v13L19 12 8 5.5Z" fill="#fff"/></svg>
+    </div>
+    <button id="rail-home" class="rail-btn active" type="button" aria-label="Início">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/></svg><span class="rail-label">Início</span>
     </button>
-    <button id="rail-home" class="rail-btn" aria-label="Início">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 9v11a1 1 0 0 0 1 1h3v-7h6v7h3a1 1 0 0 0 1-1V9"/></svg>
+    <button id="rail-search" class="rail-btn" type="button" aria-label="Buscar canais">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span class="rail-label">Buscar</span>
     </button>
-    <span class="rail-spacer"></span>
-    <button id="rail-settings" class="rail-btn" aria-label="Configurações">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
+    <div class="rail-spacer"></div>
+    <button id="rail-settings" class="rail-btn" type="button" aria-label="Ajustes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.5 1h.2a2 2 0 0 1 0 4h-.2a1.6 1.6 0 0 0-1.5 1Z"/></svg><span class="rail-label">Ajustes</span>
     </button>
-</aside>
+  </aside>
 
-<div class="search-bar" id="search-bar">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-    <input type="text" id="input-search" placeholder="Escreva o nome do canal..." aria-label="Buscar canal">
-</div>
-
-<div class="view-header">
-    <div class="view-title-wrap">
-        <button id="btn-back" class="back-btn">← Voltar</button>
-        <h1 id="view-title">Início</h1>
-    </div>
-</div>
-
-<main class="main-layout">
-    <div class="sidebar-panel">
-        <!-- Botão para Subir no Topo -->
-        <button class="scroll-btn-top" onclick="scrollPanel(-280)" title="Subir Lista">
-            <svg viewBox="0 0 24 24"><path d="M7 14l5-5 5 5z"/></svg>
-        </button>
-
-        <div class="panel-scroll" id="panel-content"></div>
-
-        <!-- Botão para Descer na Base -->
-        <button class="scroll-btn-bottom" onclick="scrollPanel(280)" title="Descer Lista">
-            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-        </button>
-    </div>
-
-    <div class="player-container">
-        <div class="player-topbar">
-            <span id="player-title">Nenhum canal selecionado</span>
+  <main class="page">
+    <section id="home-view" class="view active">
+      <div class="hero" aria-label="Destaque da tela inicial">
+        <div class="hero-scenes" aria-hidden="true">
+          <div class="hero-scene active"><svg viewBox="0 0 1600 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="s1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ec6e8"/><stop offset="1" stop-color="#d8edf6"/></linearGradient><linearGradient id="l1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3c8eb5"/><stop offset="1" stop-color="#8cc8d8"/></linearGradient></defs><rect width="1600" height="520" fill="url(#s1)"/><circle cx="1275" cy="105" r="66" fill="#fff5c6" opacity=".82"/><path d="M0 295 L215 148 390 282 555 120 745 302 925 174 1135 310 1325 164 1600 312 1600 520 0 520Z" fill="#6d8792"/><path d="M0 325 L245 218 415 330 610 210 770 338 980 238 1170 342 1390 244 1600 340 1600 520 0 520Z" fill="#3f6f72"/><rect y="350" width="1600" height="170" fill="url(#l1)"/></svg></div>
+          <div class="hero-scene"><svg viewBox="0 0 1600 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="s2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#79b5d7"/><stop offset=".72" stop-color="#efd08f"/><stop offset="1" stop-color="#f7e8be"/></linearGradient></defs><rect width="1600" height="520" fill="url(#s2)"/><circle cx="1240" cy="154" r="74" fill="#fff1ae"/><path d="M0 292 C240 244 430 260 620 310 C790 353 950 344 1120 298 C1300 248 1420 234 1600 250 V520 H0Z" fill="#4f97aa"/><path d="M0 356 C290 326 506 396 720 384 C940 372 1080 290 1260 302 C1390 310 1500 344 1600 368 V520 H0Z" fill="#77bdc4"/><path d="M1120 240 C1260 212 1400 202 1600 216 V520 H1280 C1235 440 1170 356 1120 240Z" fill="#496e58"/></svg></div>
+          <div class="hero-scene"><svg viewBox="0 0 1600 520" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="s3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ccbe2"/><stop offset="1" stop-color="#e9f2e2"/></linearGradient></defs><rect width="1600" height="520" fill="url(#s3)"/><ellipse cx="1290" cy="108" rx="82" ry="50" fill="#fff" opacity=".72"/><ellipse cx="1380" cy="118" rx="104" ry="54" fill="#fff" opacity=".62"/><path d="M0 310 C220 244 395 248 565 306 C728 362 862 344 1030 282 C1220 212 1390 230 1600 300 V520 H0Z" fill="#5d8e65"/><path d="M0 382 C220 322 430 346 620 390 C815 436 1012 410 1190 360 C1370 310 1510 326 1600 358 V520 H0Z" fill="#85ad70"/><path d="M0 445 C300 400 580 448 880 438 C1110 430 1360 402 1600 430 V520 H0Z" fill="#b9cc84"/></svg></div>
         </div>
-        <div class="player-stage" id="player-stage">
-            <div class="player-placeholder">
-                <h3>Como Assistir</h3>
-                <p>Escolha um canal ao lado para começar a ver.</p>
-            </div>
+        <div class="hero-overlay" aria-hidden="true"></div>
+        <div id="clock" class="hero-clock">--:--</div>
+        <div class="hero-copy"><h1>Escolha o que assistir</h1><p>Use o menu à esquerda para navegar, buscar canais ou abrir os ajustes.</p></div>
+      </div>
+
+      <section id="categories-section" class="section">
+        <div class="section-head"><h2 class="section-title">Categorias</h2><span id="category-count" class="section-count"></span></div>
+        <div id="category-grid-home" class="category-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-head"><h2 class="section-title">Canais</h2><span id="channel-count" class="section-count"></span></div>
+        <div id="channel-grid-home" class="channel-grid"></div>
+      </section>
+    </section>
+
+    <section id="category-view" class="view">
+      <header class="screen-head">
+        <button class="back-btn js-back" type="button" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg><span>Voltar</span></button>
+        <div class="screen-title"><h1 id="category-heading">Categoria</h1><p id="category-subtitle"></p></div>
+      </header>
+      <div id="category-grid" class="channel-grid"></div>
+    </section>
+
+    <section id="search-view" class="view">
+      <header class="screen-head">
+        <button class="back-btn js-back" type="button" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg><span>Voltar</span></button>
+        <div class="screen-title"><h1>Buscar canais</h1><p>Digite o nome do canal. Este é o único campo de busca da ferramenta.</p></div>
+      </header>
+      <div class="search-layout">
+        <div class="search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="global-search" type="search" autocomplete="off" placeholder="Digite o nome do canal..." aria-label="Buscar canal"></div>
+        <div id="search-meta" class="result-meta"></div>
+        <div id="search-results" class="channel-grid"></div>
+      </div>
+    </section>
+
+    <section id="settings-view" class="view">
+      <header class="screen-head">
+        <button class="back-btn js-back" type="button" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="m15 18-6-6 6-6"/></svg><span>Voltar</span></button>
+        <div class="screen-title"><h1>Ajustes</h1><p>Importe sua lista e defina como os canais aparecem.</p></div>
+      </header>
+      <div class="settings-panel">
+        <div class="settings-grid">
+          <div class="settings-block">
+            <label class="field-label" for="input-link">Endereço da lista</label>
+            <div class="input-row"><input id="input-link" type="text" placeholder="Cole o link da lista aqui..."><button id="btn-import" class="action-btn" type="button">Carregar</button></div>
+            <div id="import-msg"></div>
+            <label class="switch-row"><input id="chk-categories" type="checkbox"><span>Mostrar categorias na tela inicial</span></label>
+          </div>
+          <div class="settings-block">
+            <label class="field-label" for="input-config">Conteúdo da lista</label>
+            <textarea id="input-config" placeholder="Cole o conteúdo da lista aqui..."></textarea>
+          </div>
         </div>
-    </div>
-</main>
-
-<!-- Modal Configurações -->
-<div id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-    <div class="settings-content">
-        <div class="settings-header">
-            <h2 id="settings-title">Configurações</h2>
-            <p>Gerencie suas listas e opções de visualização.</p>
-        </div>
-
-        <label class="field-label" for="input-link">Endereço da Lista (Link)</label>
-        <div class="import-container">
-            <input type="text" id="input-link" placeholder="Cole o link aqui...">
-            <button id="btn-import" class="btn">Carregar</button>
-        </div>
-        <div id="import-msg"></div>
-
-        <label class="checkbox-container">
-            <input type="checkbox" id="chk-categories">
-            <span>Separar canais por categorias na tela inicial</span>
-        </label>
-
-        <label class="field-label" for="input-config" style="margin-top:1.5rem;">Ou Cole o Conteúdo da Lista</label>
-        <textarea id="input-config" placeholder="Cole o texto da lista aqui..."></textarea>
-
-        <div class="settings-actions">
-            <button id="btn-save" class="btn primary">Salvar e Atualizar</button>
-            <button id="btn-close" class="btn">Cancelar</button>
-        </div>
-    </div>
+        <div class="settings-actions"><button id="btn-cancel" class="action-btn secondary" type="button">Cancelar</button><button id="btn-save" class="action-btn" type="button">Salvar e atualizar</button></div>
+      </div>
+    </section>
+  </main>
 </div>
 
 <script>
-    const panelContent = document.getElementById('panel-content');
-    const viewTitle = document.getElementById('view-title');
-    const btnBack = document.getElementById('btn-back');
-    const settingsModal = document.getElementById('settings-modal');
-    const inputConfig = document.getElementById('input-config');
-    const inputLink = document.getElementById('input-link');
-    const chkCategories = document.getElementById('chk-categories');
-    const inputSearch = document.getElementById('input-search');
-    const searchBar = document.getElementById('search-bar');
-    const railSearch = document.getElementById('rail-search');
-    const railHome = document.getElementById('rail-home');
-    const railSettings = document.getElementById('rail-settings');
-    const btnImport = document.getElementById('btn-import');
-    const importMsg = document.getElementById('import-msg');
+const views={
+  home:document.getElementById('home-view'),
+  category:document.getElementById('category-view'),
+  search:document.getElementById('search-view'),
+  settings:document.getElementById('settings-view')
+};
+const homeCategoryGrid=document.getElementById('category-grid-home');
+const homeChannelGrid=document.getElementById('channel-grid-home');
+const categoryGrid=document.getElementById('category-grid');
+const searchResults=document.getElementById('search-results');
+const globalSearch=document.getElementById('global-search');
+const searchMeta=document.getElementById('search-meta');
+const inputConfig=document.getElementById('input-config');
+const inputLink=document.getElementById('input-link');
+const chkCategories=document.getElementById('chk-categories');
+const importMsg=document.getElementById('import-msg');
+const railHome=document.getElementById('rail-home');
+const railSearch=document.getElementById('rail-search');
+const railSettings=document.getElementById('rail-settings');
+let parsedData={template:'',categories:{}};
+let activeCategory=null;
+let heroSlideIndex=0;
+let heroSlideTimer=null;
 
-    const playerStage = document.getElementById('player-stage');
-    const playerTitle = document.getElementById('player-title');
-
-    let parsedData = { template: '', categories: {} };
-    let currentView = 'home';
-    let activeCategory = null;
-    let currentHls = null;
-
-    function loadConfig() {
-        return localStorage.getItem('portal_configText') || '';
+function loadConfig(){return localStorage.getItem('portal_configText')||''}
+function loadUseCategories(){const v=localStorage.getItem('portal_useCategories');return v!==null?v==='true':true}
+function parseConfig(text){
+  const categories={};
+  if(!text||!text.trim())return{template:'',categories};
+  const lines=text.split(/\r?\n/).filter(line=>line.trim()!=='');
+  if(lines.length<2)return{template:'',categories};
+  const template=lines[0].split(';')[0].split('\t')[0].replace(/"/g,'').trim();
+  for(let i=1;i<lines.length;i++){
+    const line=lines[i];let parts=[];
+    if(line.includes('\t'))parts=line.split('\t');
+    else if(line.includes(';'))parts=line.split(';');
+    else if(line.includes(','))parts=line.split(',');
+    if(parts.length>=3){
+      const category=parts[0].replace(/"/g,'').trim();
+      const name=parts[1].replace(/"/g,'').trim();
+      const id=parts[2].replace(/"/g,'').trim();
+      if(category&&name&&id){if(!categories[category])categories[category]=[];categories[category].push({name,id})}
     }
+  }
+  return{template,categories};
+}
+function buildLink(id){let link=parsedData.template||'';if(link.includes('[CANAL]'))return link.split('[CANAL]').join(id);if(link.includes('[ID]'))return link.split('[ID]').join(id);return link}
+function allChannels(){const out=[];Object.entries(parsedData.categories).forEach(([category,items])=>items.forEach(item=>out.push({name:item.name,category,link:buildLink(item.id)})));return out.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR',{sensitivity:'base'}))}
+function initials(name){const clean=(name||'TV').replace(/[^A-Za-zÀ-ÿ0-9 ]/g,' ').trim();const parts=clean.split(/\s+/).filter(Boolean);if(!parts.length)return'TV';if(parts.length===1)return parts[0].slice(0,2).toUpperCase();return(parts[0][0]+parts[1][0]).toUpperCase()}
+function tileGradient(name){const values=['linear-gradient(135deg,#2479c7,#15538f)','linear-gradient(135deg,#2d8a78,#176354)','linear-gradient(135deg,#5d7289,#394d62)','linear-gradient(135deg,#2e88a8,#1a6078)','linear-gradient(135deg,#7b9238,#56691f)','linear-gradient(135deg,#ad6f2b,#7d4a1b)'];let hash=0;for(const ch of(name||''))hash=((hash<<5)-hash)+ch.charCodeAt(0)|0;return values[Math.abs(hash)%values.length]}
+function makeCategoryCard(name,count){const b=document.createElement('button');b.type='button';b.className='category-card';b.innerHTML='<span class="category-name"></span><span class="category-meta"></span>';b.querySelector('.category-name').textContent=name;b.querySelector('.category-meta').textContent=count+(count===1?' canal':' canais');b.addEventListener('click',()=>openCategory(name));return b}
+function makeChannelCard(channel){const a=document.createElement('a');a.className='channel-card';a.href=channel.link;a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label',`Abrir ${channel.name} em nova aba`);const logo=document.createElement('div');logo.className='channel-logo';logo.style.setProperty('--tile',tileGradient(channel.name));logo.textContent=initials(channel.name);const info=document.createElement('div');info.className='channel-info';const name=document.createElement('div');name.className='channel-name';name.textContent=channel.name;const cat=document.createElement('div');cat.className='channel-cat';cat.textContent=channel.category;info.append(name,cat);a.append(logo,info);return a}
+function showEmpty(container,title,text){container.replaceChildren();const div=document.createElement('div');div.className='empty';div.innerHTML='<strong></strong><span></span>';div.querySelector('strong').textContent=title;div.querySelector('span').textContent=text;container.append(div)}
+function renderChannelGrid(channels,container){container.replaceChildren();if(!channels.length){showEmpty(container,'Nenhum canal encontrado','Tente outra opção ou confira sua lista nos Ajustes.');return}channels.forEach(ch=>container.append(makeChannelCard(ch)))}
+function setRail(active){railHome.classList.toggle('active',active==='home');railSearch.classList.toggle('active',active==='search');railSettings.classList.toggle('active',active==='settings')}
+function showView(name){Object.entries(views).forEach(([key,el])=>el.classList.toggle('active',key===name));window.scrollTo({top:0,behavior:'auto'})}
 
-    function loadUseCategories() {
-        const val = localStorage.getItem('portal_useCategories');
-        return val !== null ? val === 'true' : true;
-    }
+function renderHome(focusFirst=true){
+  parsedData=parseConfig(loadConfig());activeCategory=null;showView('home');setRail('home');
+  const names=Object.keys(parsedData.categories).sort((a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'}));
+  const channels=allChannels();
+  homeCategoryGrid.replaceChildren();homeChannelGrid.replaceChildren();
+  document.getElementById('category-count').textContent=names.length?`${names.length} categorias`:'';
+  document.getElementById('channel-count').textContent=channels.length?`${channels.length} canais`:'';
+  document.getElementById('categories-section').classList.toggle('hidden',!loadUseCategories()||!names.length);
+  names.forEach(name=>homeCategoryGrid.append(makeCategoryCard(name,parsedData.categories[name].length)));
+  if(!channels.length)showEmpty(homeChannelGrid,'Nenhum canal configurado','Abra Ajustes para importar ou colar sua lista.');
+  else channels.forEach(ch=>homeChannelGrid.append(makeChannelCard(ch)));
+  if(focusFirst)setTimeout(()=>{const target=(loadUseCategories()?homeCategoryGrid.querySelector('.category-card'):null)||homeChannelGrid.querySelector('.channel-card')||railHome;target?.focus({preventScroll:true})},30);
+}
+function renderCategory(name,focusFirst=true){
+  parsedData=parseConfig(loadConfig());activeCategory=name;showView('category');setRail('');
+  const items=parsedData.categories[name]||[];document.getElementById('category-heading').textContent=name;document.getElementById('category-subtitle').textContent=`${items.length} ${items.length===1?'canal':'canais'} nesta categoria.`;
+  const channels=items.map(item=>({name:item.name,category:name,link:buildLink(item.id)})).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR',{sensitivity:'base'}));renderChannelGrid(channels,categoryGrid);
+  if(focusFirst)setTimeout(()=>categoryGrid.querySelector('.channel-card')?.focus({preventScroll:true}),30);
+}
+function renderSearch(focusInput=true){parsedData=parseConfig(loadConfig());activeCategory=null;showView('search');setRail('search');globalSearch.value='';renderSearchResults('');if(focusInput)setTimeout(()=>globalSearch.focus({preventScroll:true}),30)}
+function renderSearchResults(query){const q=query.trim().toLocaleLowerCase('pt-BR');const source=allChannels();const filtered=q?source.filter(ch=>ch.name.toLocaleLowerCase('pt-BR').includes(q)):source;searchMeta.textContent=q?`${filtered.length} ${filtered.length===1?'resultado':'resultados'}`:`${source.length} ${source.length===1?'canal disponível':'canais disponíveis'}`;renderChannelGrid(filtered,searchResults)}
+function renderSettings(focusFirst=true){showView('settings');setRail('settings');inputConfig.value=loadConfig();chkCategories.checked=loadUseCategories();inputLink.value='';setImportMsg('');if(focusFirst)setTimeout(()=>inputLink.focus({preventScroll:true}),30)}
 
-    function scrollPanel(amount) {
-        panelContent.scrollBy({ top: amount, behavior: 'smooth' });
-    }
+function appStateUrl(state){if(state.view==='category')return'#categoria='+encodeURIComponent(state.category||'');if(state.view==='search')return'#buscar';if(state.view==='settings')return'#ajustes';return'#inicio'}
+function pushState(state){history.pushState(state,'',appStateUrl(state));renderState(state)}
+function renderState(state){const s=state||{view:'home'};if(s.view==='category')renderCategory(s.category,true);else if(s.view==='search')renderSearch(true);else if(s.view==='settings')renderSettings(true);else renderHome(true)}
+function openCategory(name){pushState({view:'category',category:name})}
+function openSearch(){if(history.state?.view==='search'){renderSearch(true);return}pushState({view:'search'})}
+function openSettings(){if(history.state?.view==='settings'){renderSettings(true);return}pushState({view:'settings'})}
+function goHome(){if(history.state?.view==='home'){renderHome(true);return}pushState({view:'home'})}
+function goBack(){if(history.state?.view&&history.state.view!=='home')history.back();else{renderHome(false);setTimeout(()=>railHome.focus({preventScroll:true}),20)}}
 
-    function parseConfig(configText) {
-        const categories = {};
-        if (!configText || configText.trim() === '') return { template: '', categories };
+railHome.addEventListener('click',goHome);railSearch.addEventListener('click',openSearch);railSettings.addEventListener('click',openSettings);
+document.querySelectorAll('.js-back').forEach(btn=>btn.addEventListener('click',goBack));
+globalSearch.addEventListener('input',()=>renderSearchResults(globalSearch.value));
+document.getElementById('btn-cancel').addEventListener('click',goBack);
+function setImportMsg(text,type=''){importMsg.className=type||'';importMsg.textContent=text}
+document.getElementById('btn-import').addEventListener('click',async()=>{const url=inputLink.value.trim();if(!url){setImportMsg('Digite um link válido.','err');return}setImportMsg('Carregando lista...');try{const response=await fetch(url);if(!response.ok)throw new Error();inputConfig.value=await response.text();setImportMsg('Lista carregada com sucesso.','ok')}catch(e){try{const proxyUrl='https://api.allorigins.win/raw?url='+encodeURIComponent(url);const responseProxy=await fetch(proxyUrl);if(!responseProxy.ok)throw new Error();inputConfig.value=await responseProxy.text();setImportMsg('Lista carregada com sucesso.','ok')}catch(e2){setImportMsg('Não foi possível carregar esse link. Cole o conteúdo manualmente.','err')}}});
+document.getElementById('btn-save').addEventListener('click',()=>{localStorage.setItem('portal_configText',inputConfig.value);localStorage.setItem('portal_useCategories',String(chkCategories.checked));parsedData=parseConfig(loadConfig());const home={view:'home'};history.replaceState(home,'',appStateUrl(home));renderHome(true)});
 
-        const lines = configText.split('\n').filter(line => line.trim() !== '');
-        if (lines.length < 2) return { template: '', categories };
-
-        const templateLine = lines[0].split(';')[0].split('\t')[0];
-        const template = templateLine.replace(/"/g, '').trim();
-
-        for (let i = 1; i < lines.length; i++) {
-            let currentLine = lines[i];
-            let parts = [];
-
-            if (currentLine.includes('\t')) parts = currentLine.split('\t');
-            else if (currentLine.includes(';')) parts = currentLine.split(';');
-            else if (currentLine.includes(',')) parts = currentLine.split(',');
-
-            if (parts.length >= 3) {
-                const category = parts[0].replace(/"/g, '').trim();
-                const name = parts[1].replace(/"/g, '').trim();
-                const id = parts[2].replace(/"/g, '').trim();
-
-                if (category && name && id) {
-                    if (!categories[category]) categories[category] = [];
-                    categories[category].push({ name, id });
-                }
-            }
-        }
-        return { template, categories };
-    }
-
-    function renderHome() {
-        const useCategories = loadUseCategories();
-        parsedData = parseConfig(loadConfig());
-        const categories = parsedData.categories;
-
-        if (Object.keys(categories).length === 0) {
-            currentView = 'home';
-            viewTitle.textContent = 'Início';
-            btnBack.style.display = 'none';
-            panelContent.innerHTML = `
-                <div class="empty-state">
-                    <h3>Nenhum canal encontrado</h3>
-                    <p>Clique no botão de engrenagem na barra lateral para configurar sua lista.</p>
-                    <button class="btn primary" id="btn-empty-settings" style="margin-top:15px;">Configurar Agora</button>
-                </div>`;
-            const btn = document.getElementById('btn-empty-settings');
-            if(btn) btn.addEventListener('click', openModal);
-            return;
-        }
-
-        if (useCategories) {
-            currentView = 'categories-home';
-            viewTitle.textContent = 'Escolha uma Categoria';
-            btnBack.style.display = 'none';
-
-            let html = '';
-            for (const catName in categories) {
-                const count = categories[catName].length;
-                html += `<button type="button" class="nav-card" onclick="openCategory('${catName.replace(/'/g, "\\'")}')">
-                            <span class="label">${catName}</span>
-                            <span class="badge">${count}</span>
-                         </button>`;
-            }
-            panelContent.innerHTML = html;
-        } else {
-            currentView = 'all-channels';
-            viewTitle.textContent = 'Todos os Canais';
-            btnBack.style.display = 'none';
-
-            let allChannels = [];
-            for (const catName in categories) {
-                categories[catName].forEach(item => {
-                    let link = parsedData.template;
-                    if (link.includes('[CANAL]')) link = link.split('[CANAL]').join(item.id);
-                    else if (link.includes('[ID]')) link = link.split('[ID]').join(item.id);
-                    allChannels.push({ name: item.name, link, category: catName });
-                });
-            }
-
-            allChannels.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
-
-            let html = '';
-            allChannels.forEach(item => {
-                const safeName = item.name.replace(/"/g, '&quot;');
-                html += `<button type="button" class="nav-card" 
-                            onclick="openPlayer('${item.link.replace(/'/g, "\\'")}', '${safeName.replace(/'/g, "\\'")}')">
-                            <span class="label">${item.name}</span>
-                            <span style="font-size:0.8rem; font-weight:700; color:var(--text-faint);">ASSISTIR ▶</span>
-                         </button>`;
-            });
-            panelContent.innerHTML = html;
-        }
-
-        setTimeout(() => {
-            const first = panelContent.querySelector('.nav-card');
-            if (first) first.focus();
-        }, 50);
-    }
-
-    function openCategory(catName) {
-        currentView = 'category-details';
-        activeCategory = catName;
-        viewTitle.textContent = catName;
-        btnBack.style.display = 'block';
-
-        const items = parsedData.categories[catName] || [];
-        let html = '';
-        items.forEach(item => {
-            let link = parsedData.template;
-            if (link.includes('[CANAL]')) link = link.split('[CANAL]').join(item.id);
-            else if (link.includes('[ID]')) link = link.split('[ID]').join(item.id);
-
-            const safeName = item.name.replace(/"/g, '&quot;');
-            html += `<button type="button" class="nav-card" 
-                        onclick="openPlayer('${link.replace(/'/g, "\\'")}', '${safeName.replace(/'/g, "\\'")}')">
-                        <span class="label">${item.name}</span>
-                        <span style="font-size:0.8rem; font-weight:700; color:var(--text-faint);">ASSISTIR ▶</span>
-                     </button>`;
-        });
-        panelContent.innerHTML = html;
-
-        setTimeout(() => {
-            const first = panelContent.querySelector('.nav-card');
-            if (first) first.focus();
-        }, 50);
-    }
-
-    btnBack.addEventListener('click', () => {
-        renderHome();
-    });
-
-    /* ---------- Busca ---------- */
-    function applySearch() {
-        const query = inputSearch.value.trim().toLowerCase();
-        if (!query) {
-            renderHome();
-            return;
-        }
-
-        currentView = 'search';
-        viewTitle.textContent = 'Resultados da Busca';
-        btnBack.style.display = 'block';
-
-        let html = '';
-        for (const catName in parsedData.categories) {
-            parsedData.categories[catName].forEach(item => {
-                if (item.name.toLowerCase().includes(query)) {
-                    let link = parsedData.template;
-                    if (link.includes('[CANAL]')) link = link.split('[CANAL]').join(item.id);
-                    else if (link.includes('[ID]')) link = link.split('[ID]').join(item.id);
-
-                    const safeName = item.name.replace(/"/g, '&quot;');
-                    html += `<button type="button" class="nav-card" 
-                                onclick="openPlayer('${link.replace(/'/g, "\\'")}', '${safeName.replace(/'/g, "\\'")}')">
-                                <span class="label">${item.name} <small style="color:var(--text-dim); display:block; font-size:0.85rem; margin-top:4px;">Categoria: ${catName}</small></span>
-                             </button>`;
-                }
-            });
-        }
-        panelContent.innerHTML = html || '<div class="empty-state"><h3>Nenhum canal encontrado com esse nome</h3></div>';
-    }
-    inputSearch.addEventListener('input', applySearch);
-
-    railSearch.addEventListener('click', () => {
-        if (searchBar.classList.contains('open')) {
-            searchBar.classList.remove('open');
-            railSearch.setAttribute('aria-pressed', 'false');
-            inputSearch.value = '';
-            renderHome();
-        } else {
-            searchBar.classList.add('open');
-            railSearch.setAttribute('aria-pressed', 'true');
-            inputSearch.focus();
-        }
-    });
-
-    railHome.addEventListener('click', () => {
-        searchBar.classList.remove('open');
-        inputSearch.value = '';
-        renderHome();
-    });
-
-    /* ---------- Player ---------- */
-    function loadHlsScript(cb) {
-        if (window.Hls) { cb(); return; }
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.15/hls.min.js';
-        s.onload = cb;
-        s.onerror = () => cb();
-        document.head.appendChild(s);
-    }
-
-    function openPlayer(url, name) {
-        if (!url) return;
-        playerTitle.textContent = "Assistindo: " + name;
-        playerStage.innerHTML = '';
-        if (currentHls) { currentHls.destroy(); currentHls = null; }
-
-        const isHls = /\.m3u8(\?|$)/i.test(url);
-        const isDirectVideo = /\.(mp4|webm|ogg|mov|mkv)(\?|$)/i.test(url);
-
-        if (isHls) {
-            const video = document.createElement('video');
-            video.controls = true; video.autoplay = true; video.playsInline = true;
-            playerStage.appendChild(video);
-            if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = url;
-            } else {
-                loadHlsScript(() => {
-                    if (window.Hls && window.Hls.isSupported()) {
-                        currentHls = new window.Hls();
-                        currentHls.loadSource(url);
-                        currentHls.attachMedia(video);
-                    } else {
-                        video.src = url;
-                    }
-                });
-            }
-        } else if (isDirectVideo) {
-            const video = document.createElement('video');
-            video.controls = true; video.autoplay = true; video.playsInline = true; video.src = url;
-            playerStage.appendChild(video);
-        } else {
-            const iframe = document.createElement('iframe');
-            iframe.src = url;
-            iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-            iframe.allowFullscreen = true;
-            playerStage.appendChild(iframe);
-        }
-    }
-
-    /* ---------- Configurações ---------- */
-    function setImportMsg(text, type) {
-        importMsg.className = type || '';
-        importMsg.textContent = text;
-    }
-
-    btnImport.addEventListener('click', async () => {
-        const url = inputLink.value.trim();
-        if (!url) { setImportMsg('Por favor, digite um link válido.', 'err'); return; }
-        setImportMsg('Carregando lista, aguarde...', '');
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Erro');
-            const text = await response.text();
-            inputConfig.value = text;
-            setImportMsg('Lista carregada com sucesso!', 'ok');
-        } catch (error) {
-            try {
-                const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
-                const responseProxy = await fetch(proxyUrl);
-                if (!responseProxy.ok) throw new Error('Erro');
-                const text = await responseProxy.text();
-                inputConfig.value = text;
-                setImportMsg('Lista carregada com sucesso!', 'ok');
-            } catch (errProxy) {
-                setImportMsg('Não foi possível carregar este link.', 'err');
-            }
-        }
-    });
-
-    function openModal() {
-        inputConfig.value = loadConfig();
-        chkCategories.checked = loadUseCategories();
-        setImportMsg('', '');
-        inputLink.value = '';
-        settingsModal.style.display = 'block';
-        inputLink.focus();
-    }
-    function closeModal() {
-        settingsModal.style.display = 'none';
-        railSettings.focus();
-    }
-    railSettings.addEventListener('click', openModal);
-    document.getElementById('btn-close').addEventListener('click', closeModal);
-
-    document.getElementById('btn-save').addEventListener('click', () => {
-        localStorage.setItem('portal_configText', inputConfig.value);
-        localStorage.setItem('portal_useCategories', chkCategories.checked);
-        settingsModal.style.display = 'none';
-        searchBar.classList.remove('open');
-        inputSearch.value = '';
-        renderHome();
-    });
-
-    window.onload = () => { renderHome(); };
+function dpadMove(key){
+  const current=document.activeElement;const focusables=[...document.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled])')].filter(el=>{const r=el.getBoundingClientRect();const s=getComputedStyle(el);return r.width>0&&r.height>0&&s.visibility!=='hidden'&&s.display!=='none'});if(!focusables.includes(current))return false;
+  const c=current.getBoundingClientRect();const cx=c.left+c.width/2,cy=c.top+c.height/2;let best=null,bestScore=Infinity;
+  for(const el of focusables){if(el===current)continue;const r=el.getBoundingClientRect();const x=r.left+r.width/2,y=r.top+r.height/2;const dx=x-cx,dy=y-cy;if(key==='ArrowRight'&&dx<=8)continue;if(key==='ArrowLeft'&&dx>=-8)continue;if(key==='ArrowDown'&&dy<=8)continue;if(key==='ArrowUp'&&dy>=-8)continue;const primary=(key==='ArrowRight'||key==='ArrowLeft')?Math.abs(dx):Math.abs(dy);const secondary=(key==='ArrowRight'||key==='ArrowLeft')?Math.abs(dy):Math.abs(dx);const score=primary+secondary*2.6;if(score<bestScore){bestScore=score;best=el}}
+  if(best){best.focus({preventScroll:true});best.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});return true}return false;
+}
+document.addEventListener('keydown',e=>{
+  const editing=['INPUT','TEXTAREA'].includes(document.activeElement?.tagName);
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)&&!editing){if(dpadMove(e.key))e.preventDefault()}
+  const isBack=e.key==='Escape'||(!editing&&e.key==='Backspace')||e.keyCode===461;
+  if(isBack){e.preventDefault();goBack()}
+});
+window.addEventListener('popstate',e=>{if(e.state?.appGuard){const home={view:'home'};history.pushState(home,'',appStateUrl(home));renderState(home);return}renderState(e.state||{view:'home'})});
+function updateClock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}
+function startHeroSlides(){const slides=[...document.querySelectorAll('.hero-scene')];if(slides.length<2||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;clearInterval(heroSlideTimer);heroSlideTimer=setInterval(()=>{slides[heroSlideIndex]?.classList.remove('active');heroSlideIndex=(heroSlideIndex+1)%slides.length;slides[heroSlideIndex]?.classList.add('active')},10000)}
+updateClock();setInterval(updateClock,30000);
+window.addEventListener('load',()=>{parsedData=parseConfig(loadConfig());const guard={view:'guard',appGuard:true};const initial={view:'home'};history.replaceState(guard,'',appStateUrl(initial));history.pushState(initial,'',appStateUrl(initial));renderState(initial);startHeroSlides()});
 </script>
 </body>
 </html>
-
