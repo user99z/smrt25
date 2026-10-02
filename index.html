@@ -1,305 +1,180 @@
 <!doctype html>
-<html lang="pt-BR" tabindex="-1">
+<html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>TV</title>
 <style>
 :root{
-  --ink:#102033;
-  --muted:#596779;
-  --accent:#175fc8;
-  --accent-2:#0f4da8;
-  --panel:rgba(255,255,255,.88);
-  --panel-strong:rgba(255,255,255,.96);
-  --line:rgba(43,67,94,.16);
-  --shadow:0 18px 50px rgba(27,48,73,.16);
-  --shadow-soft:0 9px 26px rgba(27,48,73,.11);
-  --dock-w:clamp(108px,8.8vw,158px);
-  --gap:clamp(16px,1.5vw,30px);
-  --pad-x:clamp(24px,3.4vw,72px);
-  --pad-y:clamp(20px,3vh,52px);
-  --radius:clamp(20px,1.7vw,34px);
-  --focus-ring:#155fcc;
+  --bg:#eef4f7;
+  --panel:#ffffff;
+  --panel2:#e7eef3;
+  --text:#163047;
+  --muted:#607487;
+  --blue:#1768b5;
+  --blue2:#0d4c88;
+  --focus:#f5b400;
+  --line:#d2dde5;
+  --rail:118px;
+  --gap:18px;
+  --radius:20px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:#cfdde8}
-body{
-  min-height:100vh;overflow-x:hidden;color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-  font-size:clamp(17px,.95vw,25px);
-  -webkit-font-smoothing:antialiased;
-}
-button,input,textarea{font:inherit}
-button,a,input,textarea{outline:none}
-a{color:inherit;text-decoration:none}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Arial,"Segoe UI",sans-serif}
+button,a,input,textarea{font:inherit}
+button,a{outline:none}
+a{text-decoration:none;color:inherit}
+body{background:linear-gradient(135deg,#f6fafc 0%,#e6eef4 55%,#d9e5ec 100%)}
 
-/* Cenário em tela cheia */
-.scenery{position:fixed;inset:0;z-index:0;overflow:hidden;background:#dbe8ef}
-.scene{position:absolute;inset:-2%;opacity:0;transition:opacity 1.4s ease;transform:scale(1.02)}
-.scene.active{opacity:1}
-.scene svg{width:100%;height:100%;display:block}
-.scenery::after{
-  content:"";position:absolute;inset:0;
-  background:
-    linear-gradient(90deg,rgba(245,249,252,.95) 0%,rgba(245,249,252,.82) 35%,rgba(245,249,252,.50) 67%,rgba(245,249,252,.28) 100%),
-    linear-gradient(180deg,rgba(255,255,255,.18),rgba(228,239,247,.36));
-}
+/* Barra principal: sem blur, sem transparência pesada, sem animação */
+.rail{position:fixed;left:0;top:0;bottom:0;width:var(--rail);padding:20px 14px;background:#16324a;display:flex;flex-direction:column;gap:14px;z-index:5}
+.rail-btn{height:92px;border:3px solid transparent;border-radius:18px;background:transparent;color:#d7e5ef;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-weight:700;font-size:18px;cursor:pointer}
+.rail-btn svg{width:34px;height:34px}
+.rail-btn.active{background:#214866;color:#fff}
+.rail-btn.selected,.rail-btn:focus{border-color:var(--focus);background:#fff;color:#14324a}
+.rail-spacer{flex:1}
 
-.app{position:relative;z-index:1;min-height:100vh;padding-left:calc(var(--dock-w) + clamp(18px,1.8vw,34px))}
+.app{height:100%;margin-left:var(--rail);overflow:hidden}
+.view{display:none;height:100%;padding:28px 36px 24px;overflow:hidden}
+.view.active{display:flex;flex-direction:column}
+.header{height:84px;display:flex;align-items:center;gap:18px;flex:0 0 auto}
+.header h1{margin:0;font-size:42px;line-height:1;font-weight:800;letter-spacing:-1px}
+.header p{margin:7px 0 0;font-size:20px;color:var(--muted);font-weight:600}
+.back{height:62px;min-width:126px;border:3px solid var(--line);border-radius:16px;background:#fff;color:var(--text);font-weight:800;font-size:20px;cursor:pointer}
+.back.selected,.back:focus{border-color:var(--focus);background:#fff7d6}
+.header-copy{min-width:0}
 
-/* Dock flutuante */
-.dock{
-  position:fixed;z-index:50;left:clamp(14px,1.5vw,28px);top:50%;transform:translateY(-50%);
-  width:var(--dock-w);padding:clamp(10px,1vw,18px);
-  display:flex;flex-direction:column;gap:clamp(10px,1.1vh,16px);
-  border:1px solid rgba(255,255,255,.75);border-radius:calc(var(--radius) + 8px);
-  background:rgba(248,251,253,.86);box-shadow:0 22px 60px rgba(29,51,77,.18);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)
-}
-.dock-btn{
-  position:relative;width:100%;min-height:clamp(80px,9.2vh,112px);padding:10px 8px;
-  border:2px solid transparent;border-radius:calc(var(--radius) - 4px);background:transparent;color:#405064;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;
-  font-weight:850;font-size:clamp(.86rem,.8vw,1rem);line-height:1.05;text-align:center;
-  transition:background .12s,color .12s,border-color .12s,box-shadow .12s
-}
-.dock-btn svg{width:clamp(30px,2.1vw,42px);height:clamp(30px,2.1vw,42px);flex:0 0 auto}
-.dock-btn.active{background:#e8f1ff;color:#124f9f;border-color:#c9dcf6}
-.dock-btn:hover,.dock-btn:focus-visible{
-  background:#fff;color:#0d4f9f;border-color:#fff;
-  box-shadow:0 0 0 4px #fff,0 0 0 8px var(--focus-ring),var(--shadow-soft)
-}
+.home-title{padding-top:6px}
+.home-title h1{font-size:46px}
+.home-title p{font-size:21px}
 
-/* Layout das telas */
-.view{display:none;min-height:100vh;padding:var(--pad-y) var(--pad-x) clamp(58px,7vh,100px)}
-.view.active{display:block}
-.view-inner{max-width:2200px;margin:0 auto}
-.topline{display:flex;align-items:center;justify-content:flex-end;min-height:48px;margin-bottom:clamp(28px,4vh,58px)}
-.clock{font-weight:900;font-size:clamp(1rem,1vw,1.25rem);letter-spacing:.02em;color:#253a51;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.75);padding:10px 16px;border-radius:16px;box-shadow:0 4px 18px rgba(33,55,78,.08)}
+.content{flex:1;min-height:0;display:flex;flex-direction:column}
+#view-category .content{overflow-y:auto;overflow-x:hidden;padding-right:6px}
+#view-category .content::-webkit-scrollbar{width:8px}
+#view-category .content::-webkit-scrollbar-thumb{background:#b8c7d2;border-radius:8px}
+.section-head{height:56px;display:flex;align-items:center;justify-content:space-between;flex:0 0 auto}
+.section-head h2{margin:0;font-size:27px}
+.meta{color:var(--muted);font-weight:700;font-size:17px}
 
-.home-intro{max-width:1150px;margin:0 0 clamp(34px,4.5vh,70px)}
-.eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:12px;font-weight:900;color:#315577;font-size:clamp(.88rem,.82vw,1rem);letter-spacing:.04em;text-transform:uppercase}
-.eyebrow::before{content:"";width:28px;height:4px;border-radius:999px;background:var(--accent)}
-.home-intro h1{margin:0;font-size:clamp(2.5rem,4.2vw,5.4rem);line-height:.98;letter-spacing:-.055em;font-weight:950;max-width:1000px}
-.home-intro p{margin:clamp(14px,1.7vh,22px) 0 0;color:#465a6e;font-size:clamp(1.08rem,1.18vw,1.5rem);line-height:1.45;font-weight:650;max-width:920px}
+.category-grid,.channel-grid{display:grid;gap:var(--gap);align-content:start}
+.category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.category-card{height:164px;padding:24px;border:4px solid transparent;border-radius:var(--radius);background:var(--card,#1768b5);color:#fff;text-align:left;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}
+.category-card:nth-child(6n+1){--card:#1768b5}.category-card:nth-child(6n+2){--card:#2b7c69}.category-card:nth-child(6n+3){--card:#695f95}.category-card:nth-child(6n+4){--card:#a5652c}.category-card:nth-child(6n+5){--card:#55753b}.category-card:nth-child(6n+6){--card:#3a6d89}
+.category-card.selected,.category-card:focus{border-color:var(--focus);background:var(--card,#1768b5)}
+.cat-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;min-width:0}
+.cat-name{min-width:0;font-size:27px;font-weight:800;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-count{flex:0 0 auto;font-size:16px;font-weight:800;line-height:1;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.20);white-space:nowrap}
+.cat-icon{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:24px;font-weight:900}
 
-.section{margin-top:clamp(30px,4.4vh,64px)}
-.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:clamp(16px,2.2vh,28px)}
-.section-head h2{margin:0;font-size:clamp(1.5rem,1.65vw,2.15rem);letter-spacing:-.03em;font-weight:950}
-.section-meta{font-weight:800;color:#54677a;font-size:clamp(.9rem,.85vw,1.05rem)}
+.channel-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.channel-card{height:132px;padding:18px;border:4px solid transparent;border-radius:var(--radius);background:var(--panel);display:flex;align-items:center;gap:16px;cursor:pointer}
+.channel-card.selected,.channel-card:focus{border-color:var(--focus);background:#fff8dd}
+.channel-logo{width:78px;height:78px;border-radius:18px;background:#2a678f;color:#fff;display:grid;place-items:center;font-size:22px;font-weight:900;flex:0 0 auto}
+.channel-info{min-width:0}.channel-name{font-size:22px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.channel-cat{margin-top:7px;color:var(--muted);font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* Categorias em cartões editoriais */
-.category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap)}
-.category-card{
-  --c1:#1f6fbe;--c2:#0d4d8d;
-  min-height:clamp(150px,18vh,220px);padding:clamp(22px,2vw,38px);border:2px solid rgba(255,255,255,.66);
-  border-radius:var(--radius);position:relative;overflow:hidden;color:#fff;text-align:left;cursor:pointer;
-  background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:var(--shadow-soft);
-  display:flex;flex-direction:column;justify-content:space-between;
-  transition:box-shadow .12s,border-color .12s,filter .12s
-}
-.category-card::before{content:"";position:absolute;right:-8%;top:-28%;width:54%;aspect-ratio:1;border-radius:50%;border:clamp(18px,1.8vw,32px) solid rgba(255,255,255,.10)}
-.category-card::after{content:"";position:absolute;right:13%;bottom:-48%;width:42%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.10)}
-.category-card:nth-child(6n+1){--c1:#1d6fbe;--c2:#0c4c8e}
-.category-card:nth-child(6n+2){--c1:#2b8176;--c2:#155d55}
-.category-card:nth-child(6n+3){--c1:#657a8f;--c2:#3b536c}
-.category-card:nth-child(6n+4){--c1:#ad742c;--c2:#7e4b14}
-.category-card:nth-child(6n+5){--c1:#69813a;--c2:#475f24}
-.category-card:nth-child(6n+6){--c1:#3d72a6;--c2:#275177}
-.category-card:hover,.category-card:focus-visible{
-  border-color:#fff;filter:brightness(1.05);
-  box-shadow:0 0 0 4px #fff,0 0 0 8px var(--focus-ring),0 20px 44px rgba(25,48,76,.23)
-}
-.cat-icon{position:relative;z-index:1;width:clamp(44px,3vw,60px);height:clamp(44px,3vw,60px);border-radius:18px;background:rgba(255,255,255,.18);display:grid;place-items:center}
-.cat-icon svg{width:55%;height:55%}
-.cat-copy{position:relative;z-index:1}.cat-name{display:block;font-size:clamp(1.25rem,1.3vw,1.7rem);font-weight:950;line-height:1.1}.cat-count{display:block;margin-top:8px;color:rgba(255,255,255,.90);font-weight:800;font-size:clamp(.88rem,.83vw,1rem)}
+.pager{height:64px;margin-top:auto;display:flex;align-items:center;justify-content:center;gap:16px;flex:0 0 auto}
+.page-btn{height:48px;min-width:102px;padding:0 18px;border:3px solid var(--line);border-radius:14px;background:#fff;color:var(--text);font-weight:800;font-size:18px;cursor:pointer}
+.page-btn:disabled{opacity:.35}
+.page-btn.selected,.page-btn:focus{border-color:var(--focus);background:#fff7d6}
+.page-label{min-width:120px;text-align:center;color:var(--muted);font-weight:800}
 
-/* Canais */
-.channel-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap)}
-.channel-card{
-  min-height:clamp(132px,15.5vh,188px);padding:clamp(18px,1.55vw,28px);border:2px solid rgba(255,255,255,.88);
-  border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow-soft);
-  display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:clamp(16px,1.3vw,24px);
-  transition:background .12s,border-color .12s,box-shadow .12s
-}
-.channel-card:hover,.channel-card:focus-visible{
-  background:#fff;border-color:#fff;
-  box-shadow:0 0 0 4px #fff,0 0 0 8px var(--focus-ring),0 18px 40px rgba(25,48,76,.18)
-}
-.channel-logo{width:clamp(72px,4.9vw,104px);height:clamp(72px,4.9vw,104px);border-radius:26%;display:grid;place-items:center;color:#fff;font-weight:950;font-size:clamp(1.05rem,1.05vw,1.38rem);background:var(--tile);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
-.channel-info{min-width:0}.channel-name{font-weight:950;font-size:clamp(1.05rem,1.06vw,1.34rem);line-height:1.18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.channel-cat{margin-top:8px;color:#66778a;font-size:clamp(.86rem,.8vw,.98rem);font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-panel,.settings-panel{max-width:1380px;width:100%}
+.search-input{width:100%;height:76px;border:4px solid var(--line);border-radius:18px;background:#fff;padding:0 22px;font-size:24px;font-weight:700;color:var(--text)}
+.search-input.selected,.search-input:focus{border-color:var(--focus)}
+.search-info{height:44px;display:flex;align-items:center;color:var(--muted);font-weight:700}
 
-/* Cabeçalhos internos */
-.screen-head{display:flex;align-items:center;gap:clamp(18px,1.7vw,30px);margin-bottom:clamp(30px,4.5vh,62px)}
-.back-btn{min-width:clamp(138px,10vw,192px);height:clamp(66px,7.2vh,88px);padding:0 20px;border:2px solid rgba(255,255,255,.88);border-radius:22px;background:var(--panel);box-shadow:var(--shadow-soft);color:#24394e;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-weight:900}
-.back-btn svg{width:clamp(26px,1.6vw,34px);height:clamp(26px,1.6vw,34px)}
-.back-btn:hover,.back-btn:focus-visible{background:#fff;border-color:#fff;box-shadow:0 0 0 4px #fff,0 0 0 8px var(--focus-ring),var(--shadow-soft)}
-.screen-title h1{margin:0;font-size:clamp(2rem,2.6vw,3.6rem);line-height:1;letter-spacing:-.045em;font-weight:950}.screen-title p{margin:10px 0 0;color:#53677a;font-weight:700;font-size:clamp(1rem,1vw,1.2rem)}
+.settings-panel{display:grid;grid-template-columns:1fr 1fr;gap:22px;overflow:auto;padding-bottom:8px}
+.box{background:#fff;border:2px solid var(--line);border-radius:20px;padding:22px}
+.label{display:block;font-size:20px;font-weight:800;margin-bottom:9px}
+.help{font-size:16px;line-height:1.35;color:var(--muted);margin:0 0 14px}
+.input-row{display:flex;gap:10px}
+.text-input,.config-area{width:100%;border:4px solid var(--line);border-radius:15px;background:#fff;color:var(--text);padding:14px 16px;font-size:18px}
+.text-input{height:60px}.config-area{height:240px;resize:none;font-family:monospace;line-height:1.35}
+.text-input.selected,.text-input:focus,.config-area.selected,.config-area:focus{border-color:var(--focus)}
+.action{height:60px;padding:0 22px;border:4px solid transparent;border-radius:15px;background:var(--blue);color:#fff;font-weight:800;font-size:18px;cursor:pointer}
+.action.secondary{background:#fff;color:var(--text);border-color:var(--line)}
+.action.selected,.action:focus{border-color:var(--focus)}
+.check-row{margin-top:16px;display:flex;align-items:center;gap:12px;font-size:18px;font-weight:700}
+.check-row input{width:28px;height:28px}
+.settings-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:12px}
+#import-msg{margin-top:10px;min-height:22px;font-weight:700}.ok{color:#267152}.err{color:#a13030}
 
-/* Busca */
-.search-wrap{max-width:1500px}
-.search-box{position:relative;margin-bottom:clamp(24px,3vh,40px)}
-.search-box svg{position:absolute;left:clamp(22px,1.6vw,30px);top:50%;transform:translateY(-50%);width:clamp(28px,2vw,40px);height:clamp(28px,2vw,40px);color:#5b6d7f;pointer-events:none}
-.search-box input{width:100%;height:clamp(82px,9vh,110px);padding:0 clamp(22px,2vw,34px) 0 clamp(70px,5vw,100px);border:2px solid rgba(255,255,255,.9);border-radius:24px;background:var(--panel-strong);box-shadow:var(--shadow);color:var(--ink);font-size:clamp(1.15rem,1.25vw,1.55rem);font-weight:800}
-.search-box input:focus{border-color:#fff;box-shadow:0 0 0 4px #fff,0 0 0 8px var(--focus-ring),var(--shadow)}
-.search-hint{margin:0 0 20px;color:#53677a;font-weight:800}
-
-/* Ajustes */
-.settings-shell{max-width:1500px;padding:clamp(24px,2.5vw,44px);border:1px solid rgba(255,255,255,.78);border-radius:calc(var(--radius) + 6px);background:rgba(250,252,254,.90);box-shadow:var(--shadow);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(22px,2.1vw,36px)}
-.settings-block{min-width:0}.field-label{display:block;margin:0 0 10px;font-weight:950;color:#2b4056}
-.field-help{margin:-2px 0 14px;color:#65778a;font-size:clamp(.86rem,.82vw,.98rem);font-weight:650;line-height:1.4}
-.input-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px}
-.settings-shell input[type="text"],.settings-shell textarea{width:100%;border:2px solid #d8e2ec;border-radius:18px;background:#fff;color:var(--ink);padding:16px 18px;font-weight:750;box-shadow:0 4px 12px rgba(36,58,82,.04)}
-.settings-shell input[type="text"]{height:64px}.settings-shell textarea{min-height:clamp(250px,34vh,390px);resize:vertical;line-height:1.5;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
-.settings-shell input[type="text"]:focus,.settings-shell textarea:focus{border-color:#fff;box-shadow:0 0 0 4px #fff,0 0 0 8px var(--focus-ring)}
-.action-btn{min-height:64px;padding:0 24px;border:2px solid transparent;border-radius:18px;background:var(--accent);color:#fff;font-weight:950;cursor:pointer;box-shadow:0 8px 18px rgba(23,95,200,.18)}
-.action-btn.secondary{background:#fff;color:#2c4055;border-color:#d5e0ea;box-shadow:none}
-.action-btn:hover,.action-btn:focus-visible{background:var(--accent-2);box-shadow:0 0 0 4px #fff,0 0 0 8px var(--focus-ring)}
-.action-btn.secondary:hover,.action-btn.secondary:focus-visible{background:#fff;color:#123f76;border-color:#fff}
-.switch-row{display:flex;align-items:center;gap:16px;margin-top:20px;padding:18px;border:2px solid #d8e2ec;border-radius:18px;background:#fff;font-weight:850;cursor:pointer}.switch-row:focus-within{border-color:#fff;box-shadow:0 0 0 4px #fff,0 0 0 8px var(--focus-ring)}.switch-row input{width:30px;height:30px;accent-color:var(--accent)}
-.settings-actions{display:flex;justify-content:flex-end;gap:14px;margin-top:28px}.settings-actions .action-btn{min-width:170px}
-#import-msg{min-height:26px;margin-top:11px;font-weight:850}.ok{color:#226d57}.err{color:#a43939}
-
-.empty{grid-column:1/-1;min-height:230px;border:2px dashed rgba(59,82,106,.28);border-radius:var(--radius);background:rgba(255,255,255,.65);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;color:#5c6e80;box-shadow:var(--shadow-soft)}
-.empty strong{display:block;color:var(--ink);font-size:clamp(1.2rem,1.2vw,1.5rem);margin-bottom:8px}.empty .action-btn{margin-top:22px}
+.empty{grid-column:1/-1;height:200px;border:3px dashed #b9c8d3;border-radius:20px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;color:var(--muted)}
+.empty strong{font-size:25px;color:var(--text);margin-bottom:8px}
 .hidden{display:none!important}
 
-@media(max-width:1550px){.category-grid,.channel-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:1120px){
-  :root{--dock-w:96px;--pad-x:26px}.dock-label{display:none}.dock-btn{min-height:78px}.category-grid,.channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-grid{grid-template-columns:1fr}.home-intro h1{font-size:clamp(2.45rem,5.4vw,4rem)}
+/* 720p */
+@media(max-height:800px){
+  :root{--rail:98px;--gap:12px}.rail{padding:12px 10px}.rail-btn{height:74px;font-size:15px}.rail-btn svg{width:28px;height:28px}.view{padding:18px 24px 14px}.header{height:68px}.header h1,.home-title h1{font-size:34px}.header p,.home-title p{font-size:17px}.section-head{height:44px}.section-head h2{font-size:22px}.category-card{height:126px;padding:18px}.cat-name{font-size:22px}.cat-count{font-size:15px}.channel-card{height:102px;padding:12px}.channel-logo{width:62px;height:62px;border-radius:14px}.channel-name{font-size:19px}.channel-cat{font-size:14px}.pager{height:52px}.page-btn{height:42px}.search-input{height:62px;font-size:21px}.box{padding:16px}.config-area{height:170px}
 }
-@media(max-width:760px){
-  :root{--dock-w:78px;--pad-x:16px;--pad-y:16px}.dock{left:8px;padding:8px}.dock-btn{min-height:68px;border-radius:18px}.dock-btn svg{width:28px;height:28px}.topline{margin-bottom:24px}.clock{display:none}.category-grid,.channel-grid{grid-template-columns:1fr}.screen-head{align-items:flex-start;flex-direction:column}.back-btn{min-width:0;width:max-content;height:62px}.input-row{grid-template-columns:1fr}.settings-actions{flex-direction:column-reverse}.settings-actions .action-btn{width:100%}.section-meta{display:none}
-}
-@media(min-width:2300px){
-  :root{--dock-w:184px;--pad-x:88px;--pad-y:60px}.category-grid,.channel-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.home-intro{max-width:1450px}.home-intro h1{font-size:6rem}
-}
-@media(max-height:760px) and (min-width:900px){
-  :root{--pad-y:16px}.topline{margin-bottom:18px}.home-intro{margin-bottom:28px}.home-intro h1{font-size:clamp(2.4rem,4vw,3.5rem)}.home-intro p{font-size:1rem}.section{margin-top:28px}.category-card{min-height:126px}.channel-card{min-height:116px}.dock-btn{min-height:68px}.screen-head{margin-bottom:28px}
-}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.scene{transition:none}}
+/* telas menores/largura limitada */
+@media(max-width:1150px){.category-grid,.channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-panel{grid-template-columns:1fr}}
+/* 4K / telas grandes */
+@media(min-width:2200px){:root{--rail:160px;--gap:28px}.rail-btn{height:126px;font-size:24px}.rail-btn svg{width:48px;height:48px}.view{padding:50px 64px 38px}.header{height:116px}.header h1,.home-title h1{font-size:62px}.header p,.home-title p{font-size:28px}.section-head{height:78px}.section-head h2{font-size:38px}.category-grid,.channel-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.category-card{height:220px;padding:32px}.cat-name{font-size:37px}.cat-count{font-size:23px}.channel-card{height:176px;padding:24px}.channel-logo{width:108px;height:108px;font-size:30px}.channel-name{font-size:30px}.channel-cat{font-size:22px}.pager{height:86px}.page-btn{height:62px;font-size:24px}.page-label{font-size:22px}}
 </style>
 </head>
-<body tabindex="-1">
-<div class="scenery" aria-hidden="true">
-  <div class="scene active">
-    <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
-      <defs><linearGradient id="s1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9d8eb"/><stop offset=".52" stop-color="#e8eff1"/><stop offset="1" stop-color="#9fc2c0"/></linearGradient></defs>
-      <rect width="1920" height="1080" fill="url(#s1)"/><circle cx="1550" cy="230" r="105" fill="#fff4c2" opacity=".72"/>
-      <path d="M0 650L310 430 520 565 760 360 990 600 1250 420 1500 585 1750 390 1920 540V1080H0Z" fill="#89a7a2"/>
-      <path d="M0 735L330 560 590 700 900 500 1160 710 1430 560 1700 690 1920 575V1080H0Z" fill="#688c83"/>
-      <rect y="760" width="1920" height="320" fill="#b9d5d8"/><path d="M0 845C400 790 730 875 1080 825s580-16 840 20v235H0Z" fill="#d7e6e7" opacity=".8"/>
-    </svg>
-  </div>
-  <div class="scene">
-    <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
-      <defs><linearGradient id="s2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c7dff0"/><stop offset=".55" stop-color="#f5e5c8"/><stop offset="1" stop-color="#86b5c5"/></linearGradient></defs>
-      <rect width="1920" height="1080" fill="url(#s2)"/><circle cx="1500" cy="300" r="120" fill="#fff0bb" opacity=".75"/>
-      <path d="M0 620C300 560 500 570 760 620s430 38 690-15 340-35 470 0v475H0Z" fill="#5f8fa4"/>
-      <path d="M0 720C390 690 720 740 1110 702s580-28 810 20v358H0Z" fill="#9cc3cc"/>
-      <path d="M0 845C300 800 590 840 880 820s620-50 1040 20v240H0Z" fill="#d7e8e9" opacity=".72"/>
-      <path d="M122 710L220 520l98 190zm1480 45l90-180 92 180z" fill="#4f796e" opacity=".8"/>
-    </svg>
-  </div>
-  <div class="scene">
-    <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
-      <defs><linearGradient id="s3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe1ed"/><stop offset=".46" stop-color="#f3eee0"/><stop offset="1" stop-color="#aac3ad"/></linearGradient></defs>
-      <rect width="1920" height="1080" fill="url(#s3)"/><circle cx="1580" cy="240" r="95" fill="#fff5cc" opacity=".7"/>
-      <path d="M0 700L280 530 510 690 820 460 1090 690 1390 490 1680 680 1920 510V1080H0Z" fill="#829d8a"/>
-      <path d="M0 820L250 700 600 820 980 650 1310 820 1600 705 1920 810V1080H0Z" fill="#688471"/>
-      <path d="M0 870C420 830 720 920 1120 865s590-25 800 18v197H0Z" fill="#d6e1d8" opacity=".72"/>
-    </svg>
-  </div>
-</div>
-
-<nav class="dock" aria-label="Navegação principal">
-  <button id="nav-home" class="dock-btn active" type="button" autofocus aria-label="Início">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.7 12 3l9 7.7"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-7h5v7"/></svg>
-    <span class="dock-label">Início</span>
+<body>
+<nav class="rail" aria-label="Menu principal">
+  <button id="nav-home" class="rail-btn active nav-item" data-nav type="button" autofocus>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 11 12 3l9 8"/><path d="M5 10v11h14V10"/><path d="M9 21v-7h6v7"/></svg><span>Início</span>
   </button>
-  <button id="nav-search" class="dock-btn" type="button" aria-label="Buscar canais">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
-    <span class="dock-label">Buscar</span>
+  <button id="nav-search" class="rail-btn nav-item" data-nav type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span>Buscar</span>
   </button>
-  <button id="nav-settings" class="dock-btn" type="button" aria-label="Ajustes">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.1h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3v-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3h4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
-    <span class="dock-label">Ajustes</span>
+  <button id="nav-settings" class="rail-btn nav-item" data-nav type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.1h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3v-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3h4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg><span>Ajustes</span>
   </button>
+  <div class="rail-spacer"></div>
 </nav>
 
 <div class="app">
-  <main id="view-home" class="view active" aria-label="Início">
-    <div class="view-inner">
-      <div class="topline"><div id="clock-home" class="clock" aria-label="Hora atual"></div></div>
-      <header class="home-intro">
-        <div class="eyebrow">Televisão</div>
-        <h1>O que você quer assistir?</h1>
-        <p>Escolha uma categoria ou vá direto para um canal. Use as setas do controle e pressione OK.</p>
-      </header>
-      <section id="home-categories-section" class="section">
-        <div class="section-head"><h2>Categorias</h2><span id="home-category-meta" class="section-meta"></span></div>
+  <main id="view-home" class="view active">
+    <header class="header home-title"><div class="header-copy"><h1>Escolha o que assistir</h1><p>Use as setas do controle e pressione OK.</p></div></header>
+    <div class="content">
+      <div id="home-categories-section">
+        <div class="section-head"><h2>Categorias</h2><span id="home-category-meta" class="meta"></span></div>
         <div id="home-categories" class="category-grid"></div>
-      </section>
-      <section class="section">
-        <div class="section-head"><h2>Todos os canais</h2><span id="home-channel-meta" class="section-meta"></span></div>
-        <div id="home-channels" class="channel-grid"></div>
-      </section>
-    </div>
-  </main>
-
-  <main id="view-category" class="view" aria-label="Categoria">
-    <div class="view-inner">
-      <div class="topline"><div id="clock-category" class="clock"></div></div>
-      <header class="screen-head">
-        <button class="back-btn js-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Voltar</button>
-        <div class="screen-title"><h1 id="category-title">Categoria</h1><p id="category-subtitle"></p></div>
-      </header>
-      <div id="category-channels" class="channel-grid"></div>
-    </div>
-  </main>
-
-  <main id="view-search" class="view" aria-label="Buscar canais">
-    <div class="view-inner search-wrap">
-      <div class="topline"><div id="clock-search" class="clock"></div></div>
-      <header class="screen-head">
-        <button class="back-btn js-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Voltar</button>
-        <div class="screen-title"><h1>Buscar canal</h1><p>Digite parte do nome do canal.</p></div>
-      </header>
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
-        <input id="search-input" type="search" autocomplete="off" placeholder="Ex.: Globo, Band, ESPN..." aria-label="Nome do canal">
       </div>
-      <p id="search-hint" class="search-hint"></p>
-      <div id="search-results" class="channel-grid"></div>
+      <div id="home-all-section" class="hidden">
+        <div class="section-head"><h2>Canais</h2><span id="home-channel-meta" class="meta"></span></div>
+        <div id="home-channels" class="channel-grid"></div>
+        <div id="home-pager" class="pager"></div>
+      </div>
     </div>
   </main>
 
-  <main id="view-settings" class="view" aria-label="Ajustes">
-    <div class="view-inner">
-      <div class="topline"><div id="clock-settings" class="clock"></div></div>
-      <header class="screen-head">
-        <button class="back-btn js-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Voltar</button>
-        <div class="screen-title"><h1>Ajustes</h1><p>Gerencie sua lista de canais.</p></div>
-      </header>
-      <section class="settings-shell">
-        <div class="settings-grid">
-          <div class="settings-block">
-            <label class="field-label" for="input-link">Importar por link</label>
-            <p class="field-help">Cole o endereço da lista para carregar o conteúdo automaticamente.</p>
-            <div class="input-row"><input id="input-link" type="text" inputmode="url" placeholder="https://..."><button id="btn-import" class="action-btn" type="button">Carregar</button></div>
-            <div id="import-msg" aria-live="polite"></div>
-            <label class="switch-row"><input id="chk-categories" type="checkbox"><span>Mostrar categorias na tela inicial</span></label>
-          </div>
-          <div class="settings-block">
-            <label class="field-label" for="input-config">Conteúdo da lista</label>
-            <p class="field-help">Você também pode colar ou editar a lista manualmente.</p>
-            <textarea id="input-config" spellcheck="false" placeholder="Cole sua lista aqui..."></textarea>
-          </div>
+  <main id="view-category" class="view">
+    <header class="header"><button class="back js-back" data-nav type="button">← Voltar</button><div class="header-copy"><h1 id="category-title">Categoria</h1><p id="category-subtitle"></p></div></header>
+    <div class="content"><div id="category-channels" class="channel-grid"></div></div>
+  </main>
+
+  <main id="view-search" class="view">
+    <header class="header"><button class="back js-back" data-nav type="button">← Voltar</button><div class="header-copy"><h1>Buscar canal</h1><p>Digite parte do nome do canal.</p></div></header>
+    <div class="content search-panel">
+      <input id="search-input" class="search-input" data-nav type="search" autocomplete="off" placeholder="Nome do canal">
+      <div id="search-info" class="search-info"></div>
+      <div id="search-results" class="channel-grid"></div>
+      <div id="search-pager" class="pager"></div>
+    </div>
+  </main>
+
+  <main id="view-settings" class="view">
+    <header class="header"><button class="back js-back" data-nav type="button">← Voltar</button><div class="header-copy"><h1>Ajustes</h1><p>Gerencie a lista de canais.</p></div></header>
+    <div class="content">
+      <section class="settings-panel">
+        <div class="box">
+          <label class="label" for="input-link">Importar por link</label>
+          <p class="help">Cole o endereço da lista.</p>
+          <div class="input-row"><input id="input-link" class="text-input" data-nav type="text" inputmode="url" placeholder="https://..."><button id="btn-import" class="action" data-nav type="button">Carregar</button></div>
+          <div id="import-msg"></div>
+          <label class="check-row"><input id="chk-categories" type="checkbox"><span>Mostrar categorias na tela inicial</span></label>
         </div>
-        <div class="settings-actions"><button id="btn-cancel" class="action-btn secondary" type="button">Cancelar</button><button id="btn-save" class="action-btn" type="button">Salvar alterações</button></div>
+        <div class="box">
+          <label class="label" for="input-config">Conteúdo da lista</label>
+          <p class="help">Cole ou edite a lista manualmente.</p>
+          <textarea id="input-config" class="config-area" data-nav spellcheck="false"></textarea>
+        </div>
+        <div class="settings-actions"><button id="btn-cancel" class="action secondary" data-nav type="button">Cancelar</button><button id="btn-save" class="action" data-nav type="button">Salvar</button></div>
       </section>
     </div>
   </main>
@@ -307,117 +182,86 @@ a{color:inherit;text-decoration:none}
 
 <script>
 'use strict';
-const views={home:document.getElementById('view-home'),category:document.getElementById('view-category'),search:document.getElementById('view-search'),settings:document.getElementById('view-settings')};
-const navHome=document.getElementById('nav-home');
-const navSearch=document.getElementById('nav-search');
-const navSettings=document.getElementById('nav-settings');
-const homeCategories=document.getElementById('home-categories');
-const homeChannels=document.getElementById('home-channels');
-const categoryChannels=document.getElementById('category-channels');
-const searchResults=document.getElementById('search-results');
-const searchInput=document.getElementById('search-input');
-const searchHint=document.getElementById('search-hint');
-const inputConfig=document.getElementById('input-config');
-const inputLink=document.getElementById('input-link');
-const chkCategories=document.getElementById('chk-categories');
-const importMsg=document.getElementById('import-msg');
+const $=id=>document.getElementById(id);
+const views={home:$('view-home'),category:$('view-category'),search:$('view-search'),settings:$('view-settings')};
+const navHome=$('nav-home'),navSearch=$('nav-search'),navSettings=$('nav-settings');
+const homeCategories=$('home-categories'),homeChannels=$('home-channels'),categoryChannels=$('category-channels'),searchResults=$('search-results');
+const searchInput=$('search-input'),searchInfo=$('search-info'),inputConfig=$('input-config'),inputLink=$('input-link'),chkCategories=$('chk-categories'),importMsg=$('import-msg');
+const PAGE_SIZE=12;
 let parsedData={template:'',categories:{}};
-let sceneIndex=0;
-let sceneTimer=null;
+let currentView='home',currentCategory='',currentPage=0,searchPage=0,searchSource=[];
+let selected=null;
+let focusKickTimer=null;
 
 function loadConfig(){return localStorage.getItem('portal_configText')||''}
 function loadUseCategories(){const v=localStorage.getItem('portal_useCategories');return v!==null?v==='true':true}
 function parseConfig(text){
   const categories={};
   if(!text||!text.trim())return{template:'',categories};
-  const lines=text.split(/\r?\n/).filter(line=>line.trim()!=='');
+  const lines=text.split(/\r?\n/).filter(x=>x.trim());
   if(lines.length<2)return{template:'',categories};
   const template=lines[0].split(';')[0].split('\t')[0].replace(/"/g,'').trim();
   for(let i=1;i<lines.length;i++){
-    const line=lines[i];let parts=[];
-    if(line.includes('\t'))parts=line.split('\t');
-    else if(line.includes(';'))parts=line.split(';');
-    else if(line.includes(','))parts=line.split(',');
-    if(parts.length>=3){
-      const category=parts[0].replace(/"/g,'').trim();
-      const name=parts[1].replace(/"/g,'').trim();
-      const id=parts[2].replace(/"/g,'').trim();
-      if(category&&name&&id){if(!categories[category])categories[category]=[];categories[category].push({name,id})}
-    }
+    let p=[];const line=lines[i];
+    if(line.indexOf('\t')>=0)p=line.split('\t');else if(line.indexOf(';')>=0)p=line.split(';');else if(line.indexOf(',')>=0)p=line.split(',');
+    if(p.length>=3){const c=p[0].replace(/"/g,'').trim(),n=p[1].replace(/"/g,'').trim(),id=p[2].replace(/"/g,'').trim();if(c&&n&&id){if(!categories[c])categories[c]=[];categories[c].push({name:n,id:id})}}
   }
-  return{template,categories};
+  return{template:template,categories:categories};
 }
-function buildLink(id){let link=parsedData.template||'';if(link.includes('[CANAL]'))link=link.split('[CANAL]').join(id);else if(link.includes('[ID]'))link=link.split('[ID]').join(id);return link}
-function allChannels(){const list=[];Object.entries(parsedData.categories).forEach(([category,items])=>items.forEach(item=>list.push({name:item.name,category,link:buildLink(item.id)})));return list.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR',{sensitivity:'base'}))}
-function initials(name){const clean=(name||'TV').replace(/[^A-Za-zÀ-ÿ0-9 ]/g,' ').trim();const parts=clean.split(/\s+/).filter(Boolean);if(!parts.length)return'TV';if(parts.length===1)return parts[0].slice(0,2).toUpperCase();return(parts[0][0]+parts[1][0]).toUpperCase()}
-function tileGradient(name){const colors=['linear-gradient(135deg,#1767b5,#0f4585)','linear-gradient(135deg,#2d8173,#165c53)','linear-gradient(135deg,#6e7f90,#41576c)','linear-gradient(135deg,#b2792f,#7d4b17)','linear-gradient(135deg,#71863d,#4d6027)','linear-gradient(135deg,#4a7bac,#2b557c)'];let h=0;for(const ch of(name||''))h=((h<<5)-h)+ch.charCodeAt(0)|0;return colors[Math.abs(h)%colors.length]}
+function buildLink(id){let u=parsedData.template||'';if(u.indexOf('[CANAL]')>=0)u=u.split('[CANAL]').join(id);else if(u.indexOf('[ID]')>=0)u=u.split('[ID]').join(id);return u}
+function getAllChannels(){const out=[];for(const c in parsedData.categories){const items=parsedData.categories[c];for(let i=0;i<items.length;i++)out.push({name:items[i].name,category:c,link:buildLink(items[i].id)})}out.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));return out}
+function initials(name){const p=(name||'TV').replace(/[^A-Za-zÀ-ÿ0-9 ]/g,' ').trim().split(/\s+/);return(p.length>1?(p[0][0]+p[1][0]):(p[0]||'TV').slice(0,2)).toUpperCase()}
+function colorFor(name){const c=['#1768b5','#2b7c69','#695f95','#a5652c','#55753b','#3a6d89'];let h=0;for(let i=0;i<name.length;i++)h=((h<<5)-h+name.charCodeAt(i))|0;return c[Math.abs(h)%c.length]}
 
-function categoryIcon(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="3"/><path d="M8 9h8M8 13h5"/></svg>'}
-function makeCategoryCard(name,count){const b=document.createElement('button');b.type='button';b.className='category-card';b.innerHTML='<span class="cat-icon">'+categoryIcon()+'</span><span class="cat-copy"><span class="cat-name"></span><span class="cat-count"></span></span>';b.querySelector('.cat-name').textContent=name;b.querySelector('.cat-count').textContent=count+(count===1?' canal':' canais');b.addEventListener('click',()=>openCategory(name));return b}
-function makeChannelCard(channel){const a=document.createElement('a');a.className='channel-card';a.href=channel.link||'#';a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label','Abrir '+channel.name+' em nova aba');const logo=document.createElement('div');logo.className='channel-logo';logo.style.setProperty('--tile',tileGradient(channel.name));logo.textContent=initials(channel.name);const info=document.createElement('div');info.className='channel-info';const n=document.createElement('div');n.className='channel-name';n.textContent=channel.name;const c=document.createElement('div');c.className='channel-cat';c.textContent=channel.category;info.append(n,c);a.append(logo,info);return a}
-function makeEmpty(container,title,text,withSettings){container.replaceChildren();const box=document.createElement('div');box.className='empty';const strong=document.createElement('strong');strong.textContent=title;const span=document.createElement('span');span.textContent=text;box.append(strong,span);if(withSettings){const btn=document.createElement('button');btn.type='button';btn.className='action-btn';btn.textContent='Abrir ajustes';btn.addEventListener('click',openSettings);box.append(btn)}container.append(box)}
-function fillChannels(container,channels){container.replaceChildren();if(!channels.length){makeEmpty(container,'Nenhum canal encontrado','Confira sua lista ou tente outra busca.',false);return}channels.forEach(ch=>container.append(makeChannelCard(ch)))}
+function markNav(el){el.setAttribute('data-nav','');el.addEventListener('mouseenter',()=>select(el,false));return el}
+function categoryCard(name,count){const b=markNav(document.createElement('button'));b.type='button';b.className='category-card';b.innerHTML='<span class="cat-icon">TV</span><span class="cat-bottom"><span class="cat-name"></span><span class="cat-count"></span></span>';b.querySelector('.cat-name').textContent=name;b.querySelector('.cat-count').textContent=count+(count===1?' canal':' canais');b.onclick=()=>openCategory(name);return b}
+function channelCard(ch){const a=markNav(document.createElement('a'));a.className='channel-card';a.href=ch.link||'#';a.target='_blank';a.rel='noopener noreferrer';const logo=document.createElement('div');logo.className='channel-logo';logo.style.background=colorFor(ch.name);logo.textContent=initials(ch.name);const info=document.createElement('div');info.className='channel-info';const n=document.createElement('div');n.className='channel-name';n.textContent=ch.name;const c=document.createElement('div');c.className='channel-cat';c.textContent=ch.category;info.appendChild(n);info.appendChild(c);a.appendChild(logo);a.appendChild(info);return a}
+function empty(container,title,text){container.innerHTML='';const d=document.createElement('div');d.className='empty';const s=document.createElement('strong');s.textContent=title;const p=document.createElement('span');p.textContent=text;d.appendChild(s);d.appendChild(p);container.appendChild(d)}
 
-function setNav(active){navHome.classList.toggle('active',active==='home');navSearch.classList.toggle('active',active==='search');navSettings.classList.toggle('active',active==='settings')}
-function showView(name){Object.entries(views).forEach(([key,el])=>el.classList.toggle('active',key===name));window.scrollTo(0,0)}
-function focusElement(el){if(!el)return;try{el.focus({preventScroll:true})}catch(_){try{el.focus()}catch(__){}}}
-function focusDefaultForState(state){requestAnimationFrame(()=>requestAnimationFrame(()=>{let target=null;if(state.view==='category')target=categoryChannels.querySelector('.channel-card')||document.querySelector('#view-category .js-back');else if(state.view==='search')target=searchInput;else if(state.view==='settings')target=inputLink;else target=(loadUseCategories()?homeCategories.querySelector('.category-card'):null)||homeChannels.querySelector('.channel-card')||navHome;focusElement(target)}))}
+function renderPager(container,page,total,onChange){container.innerHTML='';const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));if(pages<=1)return;const prev=markNav(document.createElement('button'));prev.className='page-btn';prev.type='button';prev.textContent='← Anterior';prev.disabled=page<=0;prev.onclick=()=>onChange(page-1);const label=document.createElement('span');label.className='page-label';label.textContent=(page+1)+' / '+pages;const next=markNav(document.createElement('button'));next.className='page-btn';next.type='button';next.textContent='Próxima →';next.disabled=page>=pages-1;next.onclick=()=>onChange(page+1);container.appendChild(prev);container.appendChild(label);container.appendChild(next)}
+function renderChannelPage(container,pager,list,page,onChange){const pages=Math.max(1,Math.ceil(list.length/PAGE_SIZE));page=Math.max(0,Math.min(page,pages-1));container.innerHTML='';if(!list.length){empty(container,'Nenhum canal encontrado','Confira a lista ou tente outra busca.');pager.innerHTML='';return page}const start=page*PAGE_SIZE;for(let i=start;i<Math.min(start+PAGE_SIZE,list.length);i++)container.appendChild(channelCard(list[i]));renderPager(pager,page,list.length,onChange);return page}
 
-function renderHome(shouldFocus=true){parsedData=parseConfig(loadConfig());showView('home');setNav('home');const categories=Object.keys(parsedData.categories).sort((a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'}));const channels=allChannels();homeCategories.replaceChildren();homeChannels.replaceChildren();document.getElementById('home-category-meta').textContent=categories.length?categories.length+' '+(categories.length===1?'categoria':'categorias'):'';document.getElementById('home-channel-meta').textContent=channels.length?channels.length+' '+(channels.length===1?'canal':'canais'):'';document.getElementById('home-categories-section').classList.toggle('hidden',!loadUseCategories()||!categories.length);categories.forEach(cat=>homeCategories.append(makeCategoryCard(cat,parsedData.categories[cat].length)));if(!channels.length)makeEmpty(homeChannels,'Sua lista está vazia','Abra os ajustes para importar ou colar sua lista de canais.',true);else channels.forEach(ch=>homeChannels.append(makeChannelCard(ch)));if(shouldFocus)focusDefaultForState({view:'home'})}
-function renderCategory(name,shouldFocus=true){parsedData=parseConfig(loadConfig());showView('category');setNav('');const items=parsedData.categories[name]||[];document.getElementById('category-title').textContent=name;document.getElementById('category-subtitle').textContent=items.length+' '+(items.length===1?'canal':'canais');const channels=items.map(item=>({name:item.name,category:name,link:buildLink(item.id)})).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR',{sensitivity:'base'}));fillChannels(categoryChannels,channels);if(shouldFocus)focusDefaultForState({view:'category',category:name})}
-function renderSearch(shouldFocus=true){parsedData=parseConfig(loadConfig());showView('search');setNav('search');searchInput.value='';renderSearchResults('');if(shouldFocus)focusDefaultForState({view:'search'})}
-function renderSearchResults(q){const query=q.trim().toLocaleLowerCase('pt-BR');const source=allChannels();const filtered=query?source.filter(ch=>ch.name.toLocaleLowerCase('pt-BR').includes(query)):source;searchHint.textContent=query?filtered.length+' '+(filtered.length===1?'resultado encontrado':'resultados encontrados'):source.length+' '+(source.length===1?'canal disponível':'canais disponíveis');fillChannels(searchResults,filtered)}
-function renderSettings(shouldFocus=true){showView('settings');setNav('settings');inputConfig.value=loadConfig();chkCategories.checked=loadUseCategories();inputLink.value='';setImportMsg('');if(shouldFocus)focusDefaultForState({view:'settings'})}
-function renderState(state,shouldFocus=true){const s=state&&state.view?state:{view:'home'};if(s.view==='category')renderCategory(s.category||'',shouldFocus);else if(s.view==='search')renderSearch(shouldFocus);else if(s.view==='settings')renderSettings(shouldFocus);else renderHome(shouldFocus)}
+function showView(name){currentView=name;for(const k in views)views[k].classList.toggle('active',k===name);navHome.classList.toggle('active',name==='home');navSearch.classList.toggle('active',name==='search');navSettings.classList.toggle('active',name==='settings')}
+function renderHome(){parsedData=parseConfig(loadConfig());showView('home');currentPage=0;const cats=Object.keys(parsedData.categories).sort((a,b)=>a.localeCompare(b,'pt-BR'));$('home-category-meta').textContent=cats.length?cats.length+' categorias':'';homeCategories.innerHTML='';const useCats=loadUseCategories()&&cats.length>0;$('home-categories-section').classList.toggle('hidden',!useCats);$('home-all-section').classList.toggle('hidden',useCats);if(useCats){for(let i=0;i<cats.length;i++)homeCategories.appendChild(categoryCard(cats[i],parsedData.categories[cats[i]].length));if(!cats.length)empty(homeCategories,'Nenhuma categoria','Abra Ajustes para configurar sua lista.')}else{const all=getAllChannels();$('home-channel-meta').textContent=all.length+' canais';const turnPage=function(p){currentPage=renderChannelPage(homeChannels,$('home-pager'),all,p,turnPage);selectFirstContent()};currentPage=renderChannelPage(homeChannels,$('home-pager'),all,currentPage,turnPage)}selectFirstContent()}
+function renderCategory(name){parsedData=parseConfig(loadConfig());showView('category');currentCategory=name;const src=(parsedData.categories[name]||[]).map(x=>({name:x.name,category:name,link:buildLink(x.id)}));src.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));$('category-title').textContent=name;$('category-subtitle').textContent=src.length+(src.length===1?' canal':' canais');categoryChannels.innerHTML='';if(!src.length){empty(categoryChannels,'Nenhum canal encontrado','Esta categoria está vazia.')}else{for(let i=0;i<src.length;i++)categoryChannels.appendChild(channelCard(src[i]))}const scroller=document.querySelector('#view-category .content');if(scroller)scroller.scrollTop=0;selectFirstContent()}
+function renderSearch(reset){parsedData=parseConfig(loadConfig());showView('search');if(reset){searchInput.value='';searchPage=0}applySearch(false);select(searchInput,true)}
+function applySearch(refocus){const q=searchInput.value.trim().toLowerCase();const all=getAllChannels();searchSource=q?all.filter(x=>x.name.toLowerCase().indexOf(q)>=0):all;searchInfo.textContent=searchSource.length+(searchSource.length===1?' canal encontrado':' canais encontrados');searchPage=renderChannelPage(searchResults,$('search-pager'),searchSource,searchPage,p=>{searchPage=p;applySearch(true)});if(refocus)select(searchInput,true)}
+function renderSettings(){showView('settings');inputConfig.value=loadConfig();inputLink.value='';chkCategories.checked=loadUseCategories();setImportMsg('');select(document.querySelector('#view-settings .js-back'),true)}
 
-function stateHash(state){if(state.view==='category')return'#categoria='+encodeURIComponent(state.category||'');if(state.view==='search')return'#buscar';if(state.view==='settings')return'#ajustes';return'#inicio'}
-function pushState(state){history.pushState(state,'',stateHash(state));renderState(state,true)}
-function openCategory(name){pushState({view:'category',category:name})}
-function openSearch(){if(history.state&&history.state.view==='search'){renderSearch(true);return}pushState({view:'search'})}
-function openSettings(){if(history.state&&history.state.view==='settings'){renderSettings(true);return}pushState({view:'settings'})}
-function goHome(){if(history.state&&history.state.view==='home'){renderHome(true);return}pushState({view:'home'})}
-function goBack(){if(history.state&&history.state.view!=='home'&&!history.state.appGuard){history.back()}else{renderHome(false);focusElement(navHome)}}
+function state(){return history.state&&history.state.view?history.state:{view:'home'}}
+function push(s){history.pushState(s,'','#'+s.view);if(s.view==='category')renderCategory(s.category);else if(s.view==='search')renderSearch(true);else if(s.view==='settings')renderSettings();else renderHome()}
+function openCategory(n){push({view:'category',category:n})}
+function goHome(){if(currentView==='home'){renderHome();return}push({view:'home'})}
+function openSearch(){if(currentView==='search'){renderSearch(false);return}push({view:'search'})}
+function openSettings(){if(currentView==='settings'){renderSettings();return}push({view:'settings'})}
+function goBack(){if(currentView!=='home'){history.back()}else{select(navHome,true)}}
 
-navHome.addEventListener('click',goHome);navSearch.addEventListener('click',openSearch);navSettings.addEventListener('click',openSettings);document.querySelectorAll('.js-back').forEach(b=>b.addEventListener('click',goBack));searchInput.addEventListener('input',()=>renderSearchResults(searchInput.value));document.getElementById('btn-cancel').addEventListener('click',goBack);
-function setImportMsg(text,type){importMsg.className=type||'';importMsg.textContent=text||''}
-document.getElementById('btn-import').addEventListener('click',async()=>{const url=inputLink.value.trim();if(!url){setImportMsg('Digite um link válido.','err');return}setImportMsg('Carregando lista...','');try{const r=await fetch(url);if(!r.ok)throw new Error();inputConfig.value=await r.text();setImportMsg('Lista carregada com sucesso.','ok')}catch(_){try{const proxy='https://api.allorigins.win/raw?url='+encodeURIComponent(url);const r=await fetch(proxy);if(!r.ok)throw new Error();inputConfig.value=await r.text();setImportMsg('Lista carregada com sucesso.','ok')}catch(__){setImportMsg('Não foi possível carregar esse link. Cole o conteúdo manualmente.','err')}}});
-document.getElementById('btn-save').addEventListener('click',()=>{localStorage.setItem('portal_configText',inputConfig.value);localStorage.setItem('portal_useCategories',String(chkCategories.checked));parsedData=parseConfig(loadConfig());setImportMsg('Alterações salvas.','ok');setTimeout(()=>goBack(),120)});
+navHome.onclick=goHome;navSearch.onclick=openSearch;navSettings.onclick=openSettings;document.querySelectorAll('.js-back').forEach(x=>x.onclick=goBack);$('btn-cancel').onclick=goBack;searchInput.addEventListener('input',()=>{searchPage=0;applySearch(false)});
+function setImportMsg(t,type){importMsg.className=type||'';importMsg.textContent=t||''}
+$('btn-import').onclick=async()=>{const url=inputLink.value.trim();if(!url){setImportMsg('Digite um link válido.','err');return}setImportMsg('Carregando...','');try{let r=await fetch(url);if(!r.ok)throw 0;inputConfig.value=await r.text();setImportMsg('Lista carregada.','ok')}catch(e){try{let r=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url));if(!r.ok)throw 0;inputConfig.value=await r.text();setImportMsg('Lista carregada.','ok')}catch(e2){setImportMsg('Falha ao carregar. Cole a lista manualmente.','err')}}};
+$('btn-save').onclick=()=>{localStorage.setItem('portal_configText',inputConfig.value);localStorage.setItem('portal_useCategories',String(chkCategories.checked));setImportMsg('Salvo.','ok');setTimeout(goBack,100)};
 
-function visibleFocusables(){return[...document.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),textarea:not([disabled])')].filter(el=>{const r=el.getBoundingClientRect();const s=getComputedStyle(el);return r.width>0&&r.height>0&&s.display!=='none'&&s.visibility!=='hidden'})}
-function isEditing(el){return el&&(/^(INPUT|TEXTAREA)$/.test(el.tagName))}
-function dpadMove(key){const list=visibleFocusables();let current=document.activeElement;if(!list.includes(current)){const state=history.state&&history.state.view?history.state:{view:'home'};focusDefaultForState(state);current=document.activeElement;if(!list.includes(current))current=list[0]}if(!current)return false;const c=current.getBoundingClientRect();const cx=c.left+c.width/2,cy=c.top+c.height/2;let best=null,bestScore=Infinity;for(const el of list){if(el===current)continue;const r=el.getBoundingClientRect();const x=r.left+r.width/2,y=r.top+r.height/2;const dx=x-cx,dy=y-cy;if(key==='ArrowRight'&&dx<=8)continue;if(key==='ArrowLeft'&&dx>=-8)continue;if(key==='ArrowDown'&&dy<=8)continue;if(key==='ArrowUp'&&dy>=-8)continue;const primary=(key==='ArrowLeft'||key==='ArrowRight')?Math.abs(dx):Math.abs(dy);const secondary=(key==='ArrowLeft'||key==='ArrowRight')?Math.abs(dy):Math.abs(dx);const overlapPenalty=secondary>primary*1.8?secondary*.8:0;const score=primary+secondary*2.35+overlapPenalty;if(score<bestScore){bestScore=score;best=el}}if(best){focusElement(best);best.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});return true}return false}
+/* Navegação própria: a seleção não depende do :focus do navegador. */
+function navItems(){return Array.prototype.slice.call(document.querySelectorAll('.view.active [data-nav]:not([disabled]), .rail [data-nav]:not([disabled])')).filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0})}
+function select(el,doFocus){if(!el)return;if(selected)selected.classList.remove('selected');selected=el;selected.classList.add('selected');if(doFocus!==false){try{selected.focus({preventScroll:true})}catch(e){try{selected.focus()}catch(_){}}}if(selected.scrollIntoView){try{selected.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}}}
+function selectFirstContent(){setTimeout(()=>{let el=document.querySelector('.view.active [data-nav]:not(.js-back):not([disabled])')||document.querySelector('.view.active [data-nav]:not([disabled])')||navHome;select(el,true)},0)}
+function move(code){const items=navItems();if(!items.length)return;if(!selected||items.indexOf(selected)<0){selectFirstContent();return}const c=selected.getBoundingClientRect(),cx=c.left+c.width/2,cy=c.top+c.height/2;let best=null,score=1e9;for(let i=0;i<items.length;i++){const el=items[i];if(el===selected)continue;const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,dx=x-cx,dy=y-cy;if(code===39&&dx<=4)continue;if(code===37&&dx>=-4)continue;if(code===40&&dy<=4)continue;if(code===38&&dy>=-4)continue;const pri=(code===37||code===39)?Math.abs(dx):Math.abs(dy);const sec=(code===37||code===39)?Math.abs(dy):Math.abs(dx);const s=pri+sec*2;if(s<score){score=s;best=el}}if(best)select(best,true)}
+function isText(el){return el===searchInput||el===inputLink||el===inputConfig}
+function activate(){if(!selected)return;if(selected.tagName==='A'){selected.click();return}if(typeof selected.click==='function')selected.click()}
+function keyHandler(e){const code=e.keyCode||e.which||0;const active=document.activeElement;const editing=isText(active);if(editing){if(code===461||code===27){e.preventDefault();active.blur();select(document.querySelector('.view.active .js-back')||navHome,true)}return}if(code===37||code===38||code===39||code===40){e.preventDefault();move(code);return}if(code===13){e.preventDefault();activate();return}if(code===461||code===27||code===8){e.preventDefault();goBack();return}}
+window.addEventListener('keydown',keyHandler,true);
 
-/* Captura no window para receber as setas antes dos controles da página. */
-window.addEventListener('keydown',function(e){
-  const editing=isEditing(document.activeElement);
-  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)&&!editing){e.preventDefault();e.stopPropagation();if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();dpadMove(e.key);return}
-  const back=e.key==='Escape'||(!editing&&e.key==='Backspace')||e.keyCode===461||e.which===461;
-  if(back){e.preventDefault();e.stopPropagation();if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();goBack()}
-},true);
+/* Ao mover o Magic Remote, o item apontado também vira o item selecionado. */
+document.addEventListener('mouseover',e=>{let el=e.target.closest&&e.target.closest('[data-nav]');if(el)select(el,true)},false);
 
-window.addEventListener('popstate',function(e){if(e.state&&e.state.appGuard){const home={view:'home'};history.pushState(home,'','#inicio');renderState(home,true);return}renderState(e.state||{view:'home'},true)});
+/* Foco persistente nos primeiros segundos: útil quando o Browser entrega o foco com atraso. */
+function kickFocus(){let n=0;clearInterval(focusKickTimer);focusKickTimer=setInterval(()=>{n++;try{window.focus()}catch(e){}if(!selected)selectFirstContent();else if(document.activeElement===document.body||document.activeElement===document.documentElement)select(selected,true);if(n>=20)clearInterval(focusKickTimer)},250)}
+window.addEventListener('focus',()=>{if(selected)select(selected,true)});
+window.addEventListener('pageshow',kickFocus);
+window.addEventListener('popstate',e=>{const s=e.state||{view:'home'};if(s.view==='guard'){history.pushState({view:'home'},'','#home');renderHome();select(navHome,true);return}if(s.view==='category')renderCategory(s.category);else if(s.view==='search')renderSearch(false);else if(s.view==='settings')renderSettings();else renderHome()});
 
-function updateClock(){const value=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.querySelectorAll('.clock').forEach(el=>el.textContent=value)}
-function startScenes(){const scenes=[...document.querySelectorAll('.scene')];if(scenes.length<2||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;clearInterval(sceneTimer);sceneTimer=setInterval(()=>{scenes[sceneIndex].classList.remove('active');sceneIndex=(sceneIndex+1)%scenes.length;scenes[sceneIndex].classList.add('active')},11000)}
-
-/* Foco robusto para Smart TVs: autofocus + foco programático + recuperação. */
-function ensureInitialFocus(force){const active=document.activeElement;const hasUseful=active&&active!==document.body&&active!==document.documentElement&&visibleFocusables().includes(active);if(hasUseful&&!force)return;const state=history.state&&history.state.view?history.state:{view:'home'};focusDefaultForState(state)}
-function bootstrap(){
-  parsedData=parseConfig(loadConfig());
-  const guard={view:'guard',appGuard:true};const home={view:'home'};
-  history.replaceState(guard,'','#inicio');history.pushState(home,'','#inicio');
-  renderState(home,false);updateClock();startScenes();
-  try{window.focus()}catch(_){};try{document.body.focus({preventScroll:true})}catch(_){}
-  ensureInitialFocus(true);
-  requestAnimationFrame(()=>ensureInitialFocus(false));
-  setTimeout(()=>ensureInitialFocus(false),80);
-  setTimeout(()=>ensureInitialFocus(false),350);
-}
-window.addEventListener('pageshow',()=>setTimeout(()=>ensureInitialFocus(false),30));
-window.addEventListener('focus',()=>setTimeout(()=>ensureInitialFocus(false),20));
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(()=>ensureInitialFocus(false),30)});
-setInterval(updateClock,30000);
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootstrap,{once:true});else bootstrap();
+function boot(){parsedData=parseConfig(loadConfig());history.replaceState({view:'guard'},'','#guard');history.pushState({view:'home'},'','#home');renderHome();select(navHome,true);kickFocus()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 </script>
 </body>
 </html>
