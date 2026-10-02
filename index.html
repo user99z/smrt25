@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>TV</title>
+<title>TV Lite</title>
 <style>
 :root{
   --bg:#eef4f7;
@@ -78,12 +78,7 @@ body{background:linear-gradient(135deg,#f6fafc 0%,#e6eef4 55%,#d9e5ec 100%)}
 .page-btn.selected,.page-btn:focus{border-color:var(--focus);background:#fff7d6}
 .page-label{min-width:120px;text-align:center;color:var(--muted);font-weight:800}
 
-.search-panel,.settings-panel{max-width:1380px;width:100%}
-.search-input{width:100%;height:76px;border:4px solid var(--line);border-radius:18px;background:#fff;padding:0 22px;font-size:24px;font-weight:700;color:var(--text)}
-.search-input.selected,.search-input:focus{border-color:var(--focus)}
-.search-info{height:44px;display:flex;align-items:center;color:var(--muted);font-weight:700}
-
-.settings-panel{display:grid;grid-template-columns:1fr 1fr;gap:22px;overflow:auto;padding-bottom:8px}
+.settings-panel{max-width:1380px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:22px;overflow:auto;padding-bottom:8px}
 .box{background:#fff;border:2px solid var(--line);border-radius:20px;padding:22px}
 .label{display:block;font-size:20px;font-weight:800;margin-bottom:9px}
 .help{font-size:16px;line-height:1.35;color:var(--muted);margin:0 0 14px}
@@ -105,7 +100,7 @@ body{background:linear-gradient(135deg,#f6fafc 0%,#e6eef4 55%,#d9e5ec 100%)}
 
 /* 720p */
 @media(max-height:800px){
-  :root{--rail:98px;--gap:12px}.rail{padding:12px 10px}.rail-btn{height:74px;font-size:15px}.rail-btn svg{width:28px;height:28px}.view{padding:18px 24px 14px}.header{height:68px}.header h1,.home-title h1{font-size:34px}.header p,.home-title p{font-size:17px}.section-head{height:44px}.section-head h2{font-size:22px}.category-card{height:126px;padding:18px}.cat-name{font-size:22px}.cat-count{font-size:15px}.channel-card{height:102px;padding:12px}.channel-logo{width:62px;height:62px;border-radius:14px}.channel-name{font-size:19px}.channel-cat{font-size:14px}.pager{height:52px}.page-btn{height:42px}.search-input{height:62px;font-size:21px}.box{padding:16px}.config-area{height:170px}
+  :root{--rail:98px;--gap:12px}.rail{padding:12px 10px}.rail-btn{height:74px;font-size:15px}.rail-btn svg{width:28px;height:28px}.view{padding:18px 24px 14px}.header{height:68px}.header h1,.home-title h1{font-size:34px}.header p,.home-title p{font-size:17px}.section-head{height:44px}.section-head h2{font-size:22px}.category-card{height:126px;padding:18px}.cat-name{font-size:22px}.cat-count{font-size:15px}.channel-card{height:102px;padding:12px}.channel-logo{width:62px;height:62px;border-radius:14px}.channel-name{font-size:19px}.channel-cat{font-size:14px}.pager{height:52px}.page-btn{height:42px}.box{padding:16px}.config-area{height:170px}
 }
 /* telas menores/largura limitada */
 @media(max-width:1150px){.category-grid,.channel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-panel{grid-template-columns:1fr}}
@@ -113,18 +108,15 @@ body{background:linear-gradient(135deg,#f6fafc 0%,#e6eef4 55%,#d9e5ec 100%)}
 @media(min-width:2200px){:root{--rail:160px;--gap:28px}.rail-btn{height:126px;font-size:24px}.rail-btn svg{width:48px;height:48px}.view{padding:50px 64px 38px}.header{height:116px}.header h1,.home-title h1{font-size:62px}.header p,.home-title p{font-size:28px}.section-head{height:78px}.section-head h2{font-size:38px}.category-grid,.channel-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.category-card{height:220px;padding:32px}.cat-name{font-size:37px}.cat-count{font-size:23px}.channel-card{height:176px;padding:24px}.channel-logo{width:108px;height:108px;font-size:30px}.channel-name{font-size:30px}.channel-cat{font-size:22px}.pager{height:86px}.page-btn{height:62px;font-size:24px}.page-label{font-size:22px}}
 </style>
 </head>
-<body>
+<body tabindex="-1">
 <nav class="rail" aria-label="Menu principal">
   <button id="nav-home" class="rail-btn active nav-item" data-nav type="button" autofocus>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 11 12 3l9 8"/><path d="M5 10v11h14V10"/><path d="M9 21v-7h6v7"/></svg><span>Início</span>
   </button>
-  <button id="nav-search" class="rail-btn nav-item" data-nav type="button">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span>Buscar</span>
-  </button>
+  <div class="rail-spacer"></div>
   <button id="nav-settings" class="rail-btn nav-item" data-nav type="button">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.1h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3v-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3h4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg><span>Ajustes</span>
   </button>
-  <div class="rail-spacer"></div>
 </nav>
 
 <div class="app">
@@ -146,16 +138,6 @@ body{background:linear-gradient(135deg,#f6fafc 0%,#e6eef4 55%,#d9e5ec 100%)}
   <main id="view-category" class="view">
     <header class="header"><button class="back js-back" data-nav type="button">← Voltar</button><div class="header-copy"><h1 id="category-title">Categoria</h1><p id="category-subtitle"></p></div></header>
     <div class="content"><div id="category-channels" class="channel-grid"></div></div>
-  </main>
-
-  <main id="view-search" class="view">
-    <header class="header"><button class="back js-back" data-nav type="button">← Voltar</button><div class="header-copy"><h1>Buscar canal</h1><p>Digite parte do nome do canal.</p></div></header>
-    <div class="content search-panel">
-      <input id="search-input" class="search-input" data-nav type="search" autocomplete="off" placeholder="Nome do canal">
-      <div id="search-info" class="search-info"></div>
-      <div id="search-results" class="channel-grid"></div>
-      <div id="search-pager" class="pager"></div>
-    </div>
   </main>
 
   <main id="view-settings" class="view">
@@ -183,13 +165,13 @@ body{background:linear-gradient(135deg,#f6fafc 0%,#e6eef4 55%,#d9e5ec 100%)}
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-const views={home:$('view-home'),category:$('view-category'),search:$('view-search'),settings:$('view-settings')};
-const navHome=$('nav-home'),navSearch=$('nav-search'),navSettings=$('nav-settings');
-const homeCategories=$('home-categories'),homeChannels=$('home-channels'),categoryChannels=$('category-channels'),searchResults=$('search-results');
-const searchInput=$('search-input'),searchInfo=$('search-info'),inputConfig=$('input-config'),inputLink=$('input-link'),chkCategories=$('chk-categories'),importMsg=$('import-msg');
+const views={home:$('view-home'),category:$('view-category'),settings:$('view-settings')};
+const navHome=$('nav-home'),navSettings=$('nav-settings');
+const homeCategories=$('home-categories'),homeChannels=$('home-channels'),categoryChannels=$('category-channels');
+const inputConfig=$('input-config'),inputLink=$('input-link'),chkCategories=$('chk-categories'),importMsg=$('import-msg');
 const PAGE_SIZE=12;
 let parsedData={template:'',categories:{}};
-let currentView='home',currentCategory='',currentPage=0,searchPage=0,searchSource=[];
+let currentView='home',currentCategory='',currentPage=0;
 let selected=null;
 let focusKickTimer=null;
 
@@ -219,24 +201,21 @@ function channelCard(ch){const a=markNav(document.createElement('a'));a.classNam
 function empty(container,title,text){container.innerHTML='';const d=document.createElement('div');d.className='empty';const s=document.createElement('strong');s.textContent=title;const p=document.createElement('span');p.textContent=text;d.appendChild(s);d.appendChild(p);container.appendChild(d)}
 
 function renderPager(container,page,total,onChange){container.innerHTML='';const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));if(pages<=1)return;const prev=markNav(document.createElement('button'));prev.className='page-btn';prev.type='button';prev.textContent='← Anterior';prev.disabled=page<=0;prev.onclick=()=>onChange(page-1);const label=document.createElement('span');label.className='page-label';label.textContent=(page+1)+' / '+pages;const next=markNav(document.createElement('button'));next.className='page-btn';next.type='button';next.textContent='Próxima →';next.disabled=page>=pages-1;next.onclick=()=>onChange(page+1);container.appendChild(prev);container.appendChild(label);container.appendChild(next)}
-function renderChannelPage(container,pager,list,page,onChange){const pages=Math.max(1,Math.ceil(list.length/PAGE_SIZE));page=Math.max(0,Math.min(page,pages-1));container.innerHTML='';if(!list.length){empty(container,'Nenhum canal encontrado','Confira a lista ou tente outra busca.');pager.innerHTML='';return page}const start=page*PAGE_SIZE;for(let i=start;i<Math.min(start+PAGE_SIZE,list.length);i++)container.appendChild(channelCard(list[i]));renderPager(pager,page,list.length,onChange);return page}
+function renderChannelPage(container,pager,list,page,onChange){const pages=Math.max(1,Math.ceil(list.length/PAGE_SIZE));page=Math.max(0,Math.min(page,pages-1));container.innerHTML='';if(!list.length){empty(container,'Nenhum canal encontrado','Confira a lista nos Ajustes.');pager.innerHTML='';return page}const start=page*PAGE_SIZE;for(let i=start;i<Math.min(start+PAGE_SIZE,list.length);i++)container.appendChild(channelCard(list[i]));renderPager(pager,page,list.length,onChange);return page}
 
-function showView(name){currentView=name;for(const k in views)views[k].classList.toggle('active',k===name);navHome.classList.toggle('active',name==='home');navSearch.classList.toggle('active',name==='search');navSettings.classList.toggle('active',name==='settings')}
+function showView(name){currentView=name;for(const k in views)views[k].classList.toggle('active',k===name);navHome.classList.toggle('active',name==='home');navSettings.classList.toggle('active',name==='settings')}
 function renderHome(){parsedData=parseConfig(loadConfig());showView('home');currentPage=0;const cats=Object.keys(parsedData.categories).sort((a,b)=>a.localeCompare(b,'pt-BR'));$('home-category-meta').textContent=cats.length?cats.length+' categorias':'';homeCategories.innerHTML='';const useCats=loadUseCategories()&&cats.length>0;$('home-categories-section').classList.toggle('hidden',!useCats);$('home-all-section').classList.toggle('hidden',useCats);if(useCats){for(let i=0;i<cats.length;i++)homeCategories.appendChild(categoryCard(cats[i],parsedData.categories[cats[i]].length));if(!cats.length)empty(homeCategories,'Nenhuma categoria','Abra Ajustes para configurar sua lista.')}else{const all=getAllChannels();$('home-channel-meta').textContent=all.length+' canais';const turnPage=function(p){currentPage=renderChannelPage(homeChannels,$('home-pager'),all,p,turnPage);selectFirstContent()};currentPage=renderChannelPage(homeChannels,$('home-pager'),all,currentPage,turnPage)}selectFirstContent()}
 function renderCategory(name){parsedData=parseConfig(loadConfig());showView('category');currentCategory=name;const src=(parsedData.categories[name]||[]).map(x=>({name:x.name,category:name,link:buildLink(x.id)}));src.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));$('category-title').textContent=name;$('category-subtitle').textContent=src.length+(src.length===1?' canal':' canais');categoryChannels.innerHTML='';if(!src.length){empty(categoryChannels,'Nenhum canal encontrado','Esta categoria está vazia.')}else{for(let i=0;i<src.length;i++)categoryChannels.appendChild(channelCard(src[i]))}const scroller=document.querySelector('#view-category .content');if(scroller)scroller.scrollTop=0;selectFirstContent()}
-function renderSearch(reset){parsedData=parseConfig(loadConfig());showView('search');if(reset){searchInput.value='';searchPage=0}applySearch(false);select(searchInput,true)}
-function applySearch(refocus){const q=searchInput.value.trim().toLowerCase();const all=getAllChannels();searchSource=q?all.filter(x=>x.name.toLowerCase().indexOf(q)>=0):all;searchInfo.textContent=searchSource.length+(searchSource.length===1?' canal encontrado':' canais encontrados');searchPage=renderChannelPage(searchResults,$('search-pager'),searchSource,searchPage,p=>{searchPage=p;applySearch(true)});if(refocus)select(searchInput,true)}
 function renderSettings(){showView('settings');inputConfig.value=loadConfig();inputLink.value='';chkCategories.checked=loadUseCategories();setImportMsg('');select(document.querySelector('#view-settings .js-back'),true)}
 
 function state(){return history.state&&history.state.view?history.state:{view:'home'}}
-function push(s){history.pushState(s,'','#'+s.view);if(s.view==='category')renderCategory(s.category);else if(s.view==='search')renderSearch(true);else if(s.view==='settings')renderSettings();else renderHome()}
+function push(s){history.pushState(s,'','#'+s.view);if(s.view==='category')renderCategory(s.category);else if(s.view==='settings')renderSettings();else renderHome()}
 function openCategory(n){push({view:'category',category:n})}
 function goHome(){if(currentView==='home'){renderHome();return}push({view:'home'})}
-function openSearch(){if(currentView==='search'){renderSearch(false);return}push({view:'search'})}
 function openSettings(){if(currentView==='settings'){renderSettings();return}push({view:'settings'})}
 function goBack(){if(currentView!=='home'){history.back()}else{select(navHome,true)}}
 
-navHome.onclick=goHome;navSearch.onclick=openSearch;navSettings.onclick=openSettings;document.querySelectorAll('.js-back').forEach(x=>x.onclick=goBack);$('btn-cancel').onclick=goBack;searchInput.addEventListener('input',()=>{searchPage=0;applySearch(false)});
+navHome.onclick=goHome;navSettings.onclick=openSettings;document.querySelectorAll('.js-back').forEach(x=>x.onclick=goBack);$('btn-cancel').onclick=goBack;
 function setImportMsg(t,type){importMsg.className=type||'';importMsg.textContent=t||''}
 $('btn-import').onclick=async()=>{const url=inputLink.value.trim();if(!url){setImportMsg('Digite um link válido.','err');return}setImportMsg('Carregando...','');try{let r=await fetch(url);if(!r.ok)throw 0;inputConfig.value=await r.text();setImportMsg('Lista carregada.','ok')}catch(e){try{let r=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url));if(!r.ok)throw 0;inputConfig.value=await r.text();setImportMsg('Lista carregada.','ok')}catch(e2){setImportMsg('Falha ao carregar. Cole a lista manualmente.','err')}}};
 $('btn-save').onclick=()=>{localStorage.setItem('portal_configText',inputConfig.value);localStorage.setItem('portal_useCategories',String(chkCategories.checked));setImportMsg('Salvo.','ok');setTimeout(goBack,100)};
@@ -246,21 +225,53 @@ function navItems(){return Array.prototype.slice.call(document.querySelectorAll(
 function select(el,doFocus){if(!el)return;if(selected)selected.classList.remove('selected');selected=el;selected.classList.add('selected');if(doFocus!==false){try{selected.focus({preventScroll:true})}catch(e){try{selected.focus()}catch(_){}}}if(selected.scrollIntoView){try{selected.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}}}
 function selectFirstContent(){setTimeout(()=>{let el=document.querySelector('.view.active [data-nav]:not(.js-back):not([disabled])')||document.querySelector('.view.active [data-nav]:not([disabled])')||navHome;select(el,true)},0)}
 function move(code){const items=navItems();if(!items.length)return;if(!selected||items.indexOf(selected)<0){selectFirstContent();return}const c=selected.getBoundingClientRect(),cx=c.left+c.width/2,cy=c.top+c.height/2;let best=null,score=1e9;for(let i=0;i<items.length;i++){const el=items[i];if(el===selected)continue;const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,dx=x-cx,dy=y-cy;if(code===39&&dx<=4)continue;if(code===37&&dx>=-4)continue;if(code===40&&dy<=4)continue;if(code===38&&dy>=-4)continue;const pri=(code===37||code===39)?Math.abs(dx):Math.abs(dy);const sec=(code===37||code===39)?Math.abs(dy):Math.abs(dx);const s=pri+sec*2;if(s<score){score=s;best=el}}if(best)select(best,true)}
-function isText(el){return el===searchInput||el===inputLink||el===inputConfig}
+function isText(el){return el===inputLink||el===inputConfig}
 function activate(){if(!selected)return;if(selected.tagName==='A'){selected.click();return}if(typeof selected.click==='function')selected.click()}
-function keyHandler(e){const code=e.keyCode||e.which||0;const active=document.activeElement;const editing=isText(active);if(editing){if(code===461||code===27){e.preventDefault();active.blur();select(document.querySelector('.view.active .js-back')||navHome,true)}return}if(code===37||code===38||code===39||code===40){e.preventDefault();move(code);return}if(code===13){e.preventDefault();activate();return}if(code===461||code===27||code===8){e.preventDefault();goBack();return}}
+let lastKeyCode=0,lastKeyAt=0;
+function keyHandler(e){
+  const code=e.keyCode||e.which||0;
+  if(!code)return;
+  const now=Date.now();
+  if(e.type==='keyup'&&code===lastKeyCode&&now-lastKeyAt<1500)return;
+  if(e.type==='keydown'){lastKeyCode=code;lastKeyAt=now}
+  const active=document.activeElement;
+  const editing=isText(active);
+  if(editing){
+    if(code===461||code===27){e.preventDefault();e.stopPropagation();active.blur();select(document.querySelector('.view.active .js-back')||navHome,true)}
+    return;
+  }
+  if(code===37||code===38||code===39||code===40){e.preventDefault();e.stopPropagation();if(!selected)selectFirstContent();else move(code);return}
+  if(code===13){e.preventDefault();e.stopPropagation();activate();return}
+  if(code===461||code===27||code===8){e.preventDefault();e.stopPropagation();goBack();return}
+}
 window.addEventListener('keydown',keyHandler,true);
+window.addEventListener('keyup',keyHandler,true);
 
 /* Ao mover o Magic Remote, o item apontado também vira o item selecionado. */
 document.addEventListener('mouseover',e=>{let el=e.target.closest&&e.target.closest('[data-nav]');if(el)select(el,true)},false);
+document.addEventListener('pointerdown',()=>{setTimeout(forceAppFocus,0)},true);
 
-/* Foco persistente nos primeiros segundos: útil quando o Browser entrega o foco com atraso. */
-function kickFocus(){let n=0;clearInterval(focusKickTimer);focusKickTimer=setInterval(()=>{n++;try{window.focus()}catch(e){}if(!selected)selectFirstContent();else if(document.activeElement===document.body||document.activeElement===document.documentElement)select(selected,true);if(n>=20)clearInterval(focusKickTimer)},250)}
-window.addEventListener('focus',()=>{if(selected)select(selected,true)});
-window.addEventListener('pageshow',kickFocus);
-window.addEventListener('popstate',e=>{const s=e.state||{view:'home'};if(s.view==='guard'){history.pushState({view:'home'},'','#home');renderHome();select(navHome,true);return}if(s.view==='category')renderCategory(s.category);else if(s.view==='search')renderSearch(false);else if(s.view==='settings')renderSettings();else renderHome()});
+/* Força o foco de volta ao documento e ao item lógico selecionado. */
+function forceAppFocus(){
+  const active=document.activeElement;
+  if(isText(active))return;
+  try{window.focus()}catch(e){}
+  try{document.body.focus({preventScroll:true})}catch(e){try{document.body.focus()}catch(_){}}
+  if(!selected||!document.documentElement.contains(selected)||selected.offsetParent===null)selectFirstContent();else select(selected,true);
+}
+function kickFocus(){
+  let n=0;
+  clearInterval(focusKickTimer);
+  forceAppFocus();
+  focusKickTimer=setInterval(()=>{n++;forceAppFocus();if(n>=40)clearInterval(focusKickTimer)},150);
+}
+window.addEventListener('focus',()=>{kickFocus()});
+window.addEventListener('load',()=>{kickFocus()});
+window.addEventListener('pageshow',()=>{kickFocus()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)kickFocus()});
+window.addEventListener('popstate',e=>{const s=e.state||{view:'home'};if(s.view==='guard'){history.pushState({view:'home'},'','#home');renderHome();select(navHome,true);kickFocus();return}if(s.view==='category')renderCategory(s.category);else if(s.view==='settings')renderSettings();else renderHome();kickFocus()});
 
-function boot(){parsedData=parseConfig(loadConfig());history.replaceState({view:'guard'},'','#guard');history.pushState({view:'home'},'','#home');renderHome();select(navHome,true);kickFocus()}
+function boot(){parsedData=parseConfig(loadConfig());history.replaceState({view:'guard'},'','#guard');history.pushState({view:'home'},'','#home');renderHome();select(navHome,true);kickFocus();setTimeout(kickFocus,800);setTimeout(kickFocus,2200)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 </script>
 </body>
